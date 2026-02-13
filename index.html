@@ -1,1 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>River &amp; Thread</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; display: flex; height: 100vh; color: #e0d6c8; }
+#game-canvas { display: block; cursor: default; }
+#panel { width: 280px; min-width: 280px; background: #2a1f14; border-left: 3px solid #5a3a1a; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+#panel h1 { font-size: 18px; color: #f0c060; text-align: center; border-bottom: 2px solid #5a3a1a; padding-bottom: 6px; font-variant: small-caps; letter-spacing: 2px; }
+.section { background: #3a2a18; border: 1px solid #5a3a1a; border-radius: 4px; padding: 8px; }
+.section h2 { font-size: 13px; color: #c0a060; margin-bottom: 6px; font-variant: small-caps; letter-spacing: 1px; }
+.stat-row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; }
+.stat-val { color: #f0d080; font-weight: bold; }
+.slider-row { margin: 5px 0; }
+.slider-row label { font-size: 11px; display: flex; justify-content: space-between; }
+.slider-row input[type=range] { width: 100%; margin-top: 2px; accent-color: #c0a060; }
+button.action-btn { width: 100%; padding: 8px; margin: 3px 0; background: #5a3a1a; color: #f0d080; border: 1px solid #8a6a3a; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.15s; }
+button.action-btn:hover { background: #7a5a2a; }
+button.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+button.action-btn.upgrade { background: #1a4a3a; border-color: #3a8a6a; color: #80f0c0; }
+button.action-btn.upgrade:hover { background: #2a6a4a; }
+.era-badge { text-align: center; padding: 4px; font-size: 11px; border-radius: 3px; }
+.era-1 { background: #3a3520; color: #d0c080; }
+.era-2 { background: #1a3540; color: #80c0d0; }
+.era-3 { background: #3a1a20; color: #d08090; }
+#messages { flex: 1; min-height: 80px; overflow-y: auto; font-size: 11px; background: #1a1510; border: 1px solid #3a2a18; border-radius: 4px; padding: 6px; }
+#messages div { margin: 2px 0; padding: 2px 0; border-bottom: 1px solid #2a1f14; }
+.msg-good { color: #80d080; }
+.msg-bad { color: #d08080; }
+.msg-info { color: #80a0d0; }
+.msg-era { color: #f0d080; font-weight: bold; }
+#speed-controls { display: flex; gap: 4px; justify-content: center; }
+#speed-controls button { padding: 3px 10px; font-size: 11px; background: #3a2a18; color: #c0a060; border: 1px solid #5a3a1a; border-radius: 3px; cursor: pointer; }
+#speed-controls button.active { background: #6a4a2a; border-color: #c0a060; }
+.energy-bar { height: 8px; background: #1a1510; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+.energy-fill { height: 100%; background: linear-gradient(90deg, #4080c0, #60c0f0); transition: width 0.3s; border-radius: 4px; }
+</style>
+</head>
+<body>
+<canvas id="game-canvas"></canvas>
+<div id="panel">
+  <h1>River &amp; Thread</h1>
+  <div id="era-display" class="era-badge era-1">Era I: Water &amp; Handlooms</div>
+  <div id="speed-controls">
+    <button onclick="setSpeed(0)">&#9646;&#9646;</button>
+    <button class="active" onclick="setSpeed(1)">&#9654;</button>
+    <button onclick="setSpeed(2)">&#9654;&#9654;</button>
+    <button onclick="setSpeed(4)">&#9654;&#9654;&#9654;</button>
+  </div>
+  <div class="section">
+    <h2>Treasury</h2>
+    <div class="stat-row"><span>Gold</span><span class="stat-val" id="s-gold">100</span></div>
+    <div class="stat-row"><span>Income/day</span><span class="stat-val" id="s-income">0</span></div>
+  </div>
+  <div class="section">
+    <h2>Inventory</h2>
+    <div class="stat-row"><span>Cotton</span><span class="stat-val" id="s-cotton">0</span></div>
+    <div class="stat-row"><span>Cloth</span><span class="stat-val" id="s-cloth">0</span></div>
+  </div>
+  <div class="section">
+    <h2>Energy</h2>
+    <div class="stat-row"><span>Source</span><span class="stat-val" id="s-energy-src">Water Mill</span></div>
+    <div class="energy-bar"><div class="energy-fill" id="energy-fill" style="width:0%"></div></div>
+    <div class="stat-row"><span>Used / Max</span><span class="stat-val" id="s-energy">0 / 4</span></div>
+  </div>
+  <div class="section">
+    <h2>Factory</h2>
+    <div class="stat-row"><span>Looms</span><span class="stat-val" id="s-looms">3</span></div>
+    <div class="stat-row"><span>Workers</span><span class="stat-val" id="s-workers">0</span></div>
+    <div class="stat-row"><span>Production/day</span><span class="stat-val" id="s-production">0</span></div>
+  </div>
+  <div class="section">
+    <h2>Controls</h2>
+    <div class="slider-row">
+      <label><span>Wages</span><span id="wage-val">5</span></label>
+      <input type="range" id="wage-slider" min="1" max="30" value="5" oninput="setWage(this.value)">
+    </div>
+    <div class="slider-row">
+      <label><span>Cloth Price</span><span id="price-val">12</span></label>
+      <input type="range" id="price-slider" min="3" max="50" value="12" oninput="setPrice(this.value)">
+    </div>
+  </div>
+  <div class="section">
+    <h2>Build &amp; Upgrade</h2>
+    <button class="action-btn" id="btn-loom" onclick="buyLoom()">Buy Hand Loom (30g)</button>
+    <button class="action-btn" id="btn-power-loom" onclick="buyPowerLoom()">Buy Power Loom (80g)</button>
+    <button class="action-btn" id="btn-house" onclick="buildHouse()">Build Worker House (40g)</button>
+    <button class="action-btn upgrade" id="btn-steam" onclick="buySteam()">Steam Engine (200g)</button>
+    <button class="action-btn upgrade" id="btn-canal" onclick="buildCanal()">Canal Works (300g)</button>
+    <button class="action-btn upgrade" id="btn-rail" onclick="buildRailroad()">Railroad (500g)</button>
+  </div>
+  <div class="section">
+    <h2>Town</h2>
+    <div class="stat-row"><span>Population</span><span class="stat-val" id="s-pop">0</span></div>
+    <div class="stat-row"><span>Available Workers</span><span class="stat-val" id="s-avail">0</span></div>
+    <div class="stat-row"><span>Your Houses</span><span class="stat-val" id="s-houses">0</span></div>
+  </div>
+  <h2 style="font-size:12px; color:#c0a060; font-variant:small-caps;">Event Log</h2>
+  <div id="messages"></div>
+</div>
 
+<script>
+// ============================================================
+// RIVER & THREAD - Industrial History Simulation
+// ============================================================
+
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
+// ============ LAYOUT & SIZING ============
+let W, H, SCALE, OX, OY;
+function resize() {
+  const pw = 283;
+  canvas.width = window.innerWidth - pw;
+  canvas.height = window.innerHeight;
+  W = canvas.width;
+  H = canvas.height;
+  SCALE = Math.min(W / 1200, H / 680);
+  OX = (W - 1200 * SCALE) / 2;
+  OY = (H - 680 * SCALE) / 2;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ============ CONFIGURATION ============
+const CFG = {
+  STREET_Y: 438,
+  GROUND_Y: 462,
+  RIVER_Y: 475,
+  RIVER_H: 90,
+  FACTORY_X: 560,
+  FACTORY_W: 560,
+  FACTORY_ROOF_Y: 168,
+  FACTORY_FLOOR_Y: 462,
+  STOREHOUSE_X: 575,
+  STOREHOUSE_W: 105,
+  LOOM_AREA_X: 690,
+  LOOM_AREA_W: 290,
+  WAREHOUSE_X: 990,
+  WAREHOUSE_W: 105,
+  MILL_X: 1110,
+  MILL_Y: 455,
+  MILL_R: 32,
+  COMP1_X: 195,
+  COMP1_W: 115,
+  COMP2_X: 330,
+  COMP2_W: 115,
+  COMP_ROOF_Y: 250,
+  TOWN_X: 10,
+  TOWN_W: 170,
+  WORKER_SPEED: 60,
+  WORKER_H: 18,
+  WORKER_W: 10,
+  LOOM_W: 36,
+  LOOM_H: 44,
+  LOOM_SPACING: 50,
+  CART_W: 50,
+  CART_H: 24,
+  DAY_LENGTH: 30,
+  HAND_LOOM_RATE: 0.035,
+  POWER_LOOM_RATE: 0.08,
+  COTTON_PER_CLOTH: 1,
+  MAX_LOOMS: 10,
+  INITIAL_TOWN_POP: 8,
+  WORKERS_PER_HOUSE: 2,
+  HAND_LOOM_COST: 30,
+  POWER_LOOM_COST: 80,
+  HOUSE_COST: 40,
+  STEAM_COST: 200,
+  CANAL_COST: 300,
+  RAIL_COST: 500,
+  WATER_MILL_ENERGY: 4,
+  STEAM_ENERGY: 14,
+  CART_CAPACITY: 5,
+  BARGE_CAPACITY: 15,
+  RAILCAR_CAPACITY: 30,
+  CART_SPEED: 40,
+  BARGE_SPEED: 50,
+  RAIL_SPEED: 80,
+};
+
+// ============ COLORS ============
+const COL = {
+  sky1: '#87CEEB', sky2: '#B0E0E6',
+  hill1: '#6B8E5A', hill2: '#4A6B3A',
+  ground: '#8B7355', road: '#A0906A',
+  water1: '#3A7CA5', water2: '#2A5C85', water3: '#5A9CC5',
+  canal: '#4A6A8A', rail: '#707070',
+  brick1: '#8B4513', brick2: '#A0522D', brick3: '#CD853F',
+  stone: '#808080', stone2: '#696969',
+  wood: '#8B6914', wood2: '#A07828',
+  roof: '#6B3A2A', roof2: '#5A2A1A',
+  cotton: '#F5F0E0', cloth: '#4169E1',
+  factoryWall: '#9A8A7A', factoryInner: '#C8B898',
+  windowLit: '#FFD700', windowDark: '#3A3020',
+};
+
+// ============ GAME STATE ============
+const game = {
+  time: 0,
+  day: 1,
+  dayProgress: 0,
+  speed: 1,
+  money: 100,
+  cotton: 15,
+  cloth: 0,
+  era: 1,
+  wages: 5,
+  clothPrice: 12,
+  cottonMarketPrice: 4,
+  looms: [],
+  workers: [],
+  transports: [],
+  townHouses: [],
+  playerHouses: [],
+  notifications: [],
+  energyUsed: 0,
+  energyMax: CFG.WATER_MILL_ENERGY,
+  hasSteam: false,
+  hasCanal: false,
+  hasRailroad: false,
+  dailyIncome: 0,
+  dailyIncomeTracker: 0,
+  lastDayIncome: 0,
+  clothProducedToday: 0,
+  totalClothSold: 0,
+  totalRevenue: 0,
+  millAngle: 0,
+  steamPuffTimer: 0,
+  steamPuffs: [],
+  riverOffset: 0,
+  townGrowthTimer: 20,
+  cartSpawnTimer: 3,
+  dayNightCycle: 0.25,
+  competitors: [
+    { name: 'Smith & Co', x: CFG.COMP1_X, w: CFG.COMP1_W, wages: 4, workers: 0, maxSeats: 3, seats: 3, attractiveness: 0.5 },
+    { name: 'Jones Mill', x: CFG.COMP2_X, w: CFG.COMP2_W, wages: 4, workers: 0, maxSeats: 3, seats: 3, attractiveness: 0.5 },
+  ],
+  workerIdCounter: 0,
+};
+
+// ============ INITIALIZATION ============
+function initGame() {
+  for (let i = 0; i < 3; i++) {
+    game.looms.push(createLoom(i, 'hand'));
+  }
+  for (let i = 0; i < 5; i++) {
+    game.townHouses.push(createTownHouse(i));
+  }
+  for (let i = 0; i < CFG.INITIAL_TOWN_POP; i++) {
+    spawnWorker('town');
+  }
+  addMessage('Welcome to River & Thread!', 'info');
+  addMessage('Your factory has 3 hand looms. Set wages to attract workers.', 'info');
+  addMessage('Carts will bring cotton and buy your cloth.', 'info');
+}
+
+function createLoom(index, type) {
+  const row = Math.floor(index / 5);
+  const col = index % 5;
+  const baseX = CFG.LOOM_AREA_X + 15;
+  return {
+    index,
+    type,
+    x: baseX + col * CFG.LOOM_SPACING,
+    y: CFG.FACTORY_FLOOR_Y - CFG.LOOM_H - 14 - row * (CFG.LOOM_H + 30),
+    worker: null,
+    progress: 0,
+    active: false,
+    shuttlePos: 0,
+    needsEnergy: type === 'power',
+    productionRate: type === 'hand' ? CFG.HAND_LOOM_RATE : CFG.POWER_LOOM_RATE,
+  };
+}
+
+function createTownHouse(index) {
+  const row = Math.floor(index / 3);
+  const col = index % 3;
+  return {
+    x: CFG.TOWN_X + 10 + col * 55,
+    y: CFG.GROUND_Y - 50 - row * 58,
+    w: 45, h: 48,
+    color: ['#8B6848', '#9A7858', '#7A5838', '#A08060', '#6A5030'][index % 5],
+    hasSmokestack: Math.random() > 0.4,
+    smokeParticles: [],
+  };
+}
+
+function createPlayerHouse(index) {
+  const row = Math.floor(index / 2);
+  const col = index % 2;
+  return {
+    x: CFG.FACTORY_X - 110 + col * 50,
+    y: CFG.GROUND_Y - 50 - row * 55,
+    w: 42, h: 45,
+    color: '#7A6A50',
+    hasSmokestack: true,
+    smokeParticles: [],
+  };
+}
+
+// ============ WORKER SYSTEM ============
+const WS = {
+  AT_HOME: 'at_home',
+  WALKING_TO_STREET: 'walking_to_street',
+  ON_STREET: 'on_street',
+  DECIDING: 'deciding',
+  WALKING_TO_WORK: 'walking_to_work',
+  ENTERING_FACTORY: 'entering_factory',
+  WORKING: 'working',
+  CARRYING_CLOTH: 'carrying_cloth',
+  WALKING_HOME: 'walking_home',
+};
+
+const WORKER_COLORS = ['#D04040', '#4080D0', '#40A040', '#C0A030', '#A050C0', '#D07030', '#50B0B0', '#C06080'];
+
+function spawnWorker(origin) {
+  const isPlayer = origin === 'player';
+  const homeX = isPlayer
+    ? CFG.FACTORY_X - 90 + Math.random() * 60
+    : CFG.TOWN_X + 10 + Math.random() * (CFG.TOWN_W - 20);
+  const w = {
+    id: game.workerIdCounter++,
+    x: homeX,
+    y: CFG.STREET_Y,
+    homeX: homeX,
+    homeOrigin: origin,
+    state: WS.AT_HOME,
+    employer: null,
+    assignedLoom: null,
+    targetX: homeX,
+    targetY: CFG.STREET_Y,
+    color: WORKER_COLORS[Math.floor(Math.random() * WORKER_COLORS.length)],
+    hatColor: WORKER_COLORS[Math.floor(Math.random() * WORKER_COLORS.length)],
+    walkTimer: 0,
+    decisionTimer: 0,
+    workTimer: 0,
+    shiftProgress: 0,
+    carryingCloth: false,
+    satisfaction: 50 + Math.random() * 20,
+    wageExpectation: 3 + Math.random() * 3,
+    bobPhase: Math.random() * Math.PI * 2,
+    direction: 1,
+    idleTimer: 1 + Math.random() * 3,
+    visible: true,
+    atHomeTimer: 2 + Math.random() * 5,
+    preferPlayer: isPlayer ? 0.15 : 0,
+  };
+  game.workers.push(w);
+  return w;
+}
+
+function updateWorkers(dt) {
+  for (const w of game.workers) {
+    switch (w.state) {
+      case WS.AT_HOME:
+        w.visible = false;
+        w.atHomeTimer -= dt;
+        if (w.atHomeTimer <= 0) {
+          w.state = WS.WALKING_TO_STREET;
+          w.targetX = 200 + Math.random() * 350;
+          w.visible = true;
+          w.y = CFG.STREET_Y;
+          w.x = w.homeX;
+        }
+        break;
+
+      case WS.WALKING_TO_STREET:
+        w.bobPhase += dt * 5;
+        if (moveToward(w, w.targetX, CFG.STREET_Y, CFG.WORKER_SPEED * dt)) {
+          w.state = WS.ON_STREET;
+          w.decisionTimer = 1.5 + Math.random() * 2;
+        }
+        break;
+
+      case WS.ON_STREET:
+        w.bobPhase += dt * 4;
+        w.decisionTimer -= dt;
+        w.walkTimer -= dt;
+        if (w.walkTimer <= 0) {
+          w.targetX = 150 + Math.random() * 400;
+          w.walkTimer = 2 + Math.random() * 3;
+        }
+        moveToward(w, w.targetX, CFG.STREET_Y, CFG.WORKER_SPEED * 0.4 * dt);
+        if (w.decisionTimer <= 0) {
+          w.state = WS.DECIDING;
+          w.decisionTimer = 0.8 + Math.random() * 0.5;
+        }
+        break;
+
+      case WS.DECIDING:
+        w.decisionTimer -= dt;
+        if (w.decisionTimer <= 0) {
+          const choice = chooseEmployer(w);
+          if (choice) {
+            w.employer = choice.employer;
+            w.targetX = choice.targetX;
+            w.targetY = choice.targetY;
+            w.state = WS.WALKING_TO_WORK;
+          } else {
+            w.state = WS.ON_STREET;
+            w.decisionTimer = 3 + Math.random() * 4;
+            w.walkTimer = 0;
+          }
+        }
+        break;
+
+      case WS.WALKING_TO_WORK:
+        w.bobPhase += dt * 5;
+        if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * dt)) {
+          if (w.employer === 'player') {
+            const loom = game.looms.find(l => l.worker === null && (!l.needsEnergy || game.energyUsed < game.energyMax));
+            if (loom) {
+              loom.worker = w;
+              w.assignedLoom = loom;
+              w.targetX = loom.x + CFG.LOOM_W / 2;
+              w.targetY = loom.y + CFG.LOOM_H - 5;
+              w.state = WS.ENTERING_FACTORY;
+              if (loom.needsEnergy) game.energyUsed++;
+            } else {
+              w.employer = null;
+              w.state = WS.ON_STREET;
+              w.decisionTimer = 3;
+              w.y = CFG.STREET_Y;
+            }
+          } else {
+            const comp = game.competitors.find(c => c.name === w.employer);
+            if (comp && comp.workers < comp.seats) {
+              comp.workers++;
+              w.state = WS.WORKING;
+              w.workTimer = 0;
+              w.shiftProgress = 0;
+              w.visible = false;
+            } else {
+              w.employer = null;
+              w.state = WS.ON_STREET;
+              w.decisionTimer = 3;
+            }
+          }
+        }
+        break;
+
+      case WS.ENTERING_FACTORY:
+        w.bobPhase += dt * 5;
+        if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * dt)) {
+          w.state = WS.WORKING;
+          w.workTimer = 0;
+          w.shiftProgress = 0;
+        }
+        break;
+
+      case WS.WORKING:
+        w.shiftProgress += dt / CFG.DAY_LENGTH;
+        if (w.employer === 'player' && w.assignedLoom) {
+          const loom = w.assignedLoom;
+          loom.active = true;
+          loom.shuttlePos = Math.sin(game.time * 6) * 0.5 + 0.5;
+          if (game.cotton > 0) {
+            loom.progress += loom.productionRate * dt;
+            if (loom.progress >= 1) {
+              loom.progress = 0;
+              game.cotton = Math.max(0, game.cotton - CFG.COTTON_PER_CLOTH);
+              w.carryingCloth = true;
+              w.state = WS.CARRYING_CLOTH;
+              w.targetX = CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2;
+              w.targetY = CFG.FACTORY_FLOOR_Y - 25;
+              loom.active = false;
+            }
+          } else {
+            loom.active = false;
+          }
+        }
+        if (w.shiftProgress >= 1) {
+          endShift(w);
+        }
+        break;
+
+      case WS.CARRYING_CLOTH:
+        w.bobPhase += dt * 5;
+        if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * 0.7 * dt)) {
+          game.cloth++;
+          game.clothProducedToday++;
+          w.carryingCloth = false;
+          if (w.shiftProgress >= 1) {
+            endShift(w);
+          } else if (w.assignedLoom) {
+            w.targetX = w.assignedLoom.x + CFG.LOOM_W / 2;
+            w.targetY = w.assignedLoom.y + CFG.LOOM_H - 5;
+            w.state = WS.ENTERING_FACTORY;
+          }
+        }
+        break;
+
+      case WS.WALKING_HOME:
+        w.bobPhase += dt * 4;
+        if (moveToward(w, w.homeX, CFG.STREET_Y, CFG.WORKER_SPEED * dt)) {
+          w.state = WS.AT_HOME;
+          w.visible = false;
+          w.atHomeTimer = 4 + Math.random() * 8;
+          w.employer = null;
+        }
+        break;
+    }
+  }
+}
+
+function endShift(w) {
+  if (w.assignedLoom) {
+    if (w.assignedLoom.needsEnergy) game.energyUsed = Math.max(0, game.energyUsed - 1);
+    w.assignedLoom.worker = null;
+    w.assignedLoom.active = false;
+    w.assignedLoom = null;
+  }
+  if (w.employer && w.employer !== 'player') {
+    const comp = game.competitors.find(c => c.name === w.employer);
+    if (comp) comp.workers = Math.max(0, comp.workers - 1);
+  }
+  if (w.employer === 'player') {
+    game.money -= game.wages;
+    game.dailyIncomeTracker -= game.wages;
+  }
+  w.employer = null;
+  w.carryingCloth = false;
+  w.state = WS.WALKING_HOME;
+  w.targetX = w.homeX;
+  w.y = CFG.STREET_Y;
+  w.visible = true;
+}
+
+function chooseEmployer(w) {
+  const options = [];
+  const openLooms = game.looms.filter(l => l.worker === null && (!l.needsEnergy || game.energyUsed < game.energyMax));
+  if (openLooms.length > 0) {
+    const dist = Math.abs(w.x - (CFG.FACTORY_X + 40));
+    const score = game.wages * 1.5 - dist * 0.004 + w.preferPlayer * 10 + Math.random() * 2;
+    options.push({ employer: 'player', score, targetX: CFG.FACTORY_X + 20, targetY: CFG.STREET_Y });
+  }
+  for (const comp of game.competitors) {
+    if (comp.workers < comp.seats) {
+      const dist = Math.abs(w.x - (comp.x + comp.w / 2));
+      const score = comp.wages * 1.5 - dist * 0.004 + Math.random() * 2;
+      options.push({ employer: comp.name, score, targetX: comp.x + comp.w / 2, targetY: CFG.STREET_Y });
+    }
+  }
+  if (options.length === 0) return null;
+  options.sort((a, b) => b.score - a.score);
+  return options[0];
+}
+
+function moveToward(obj, tx, ty, speed) {
+  const dx = tx - obj.x;
+  const dy = ty - obj.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < speed + 0.5) {
+    obj.x = tx;
+    obj.y = ty;
+    return true;
+  }
+  obj.x += (dx / dist) * speed;
+  obj.y += (dy / dist) * speed;
+  obj.direction = dx > 0 ? 1 : dx < 0 ? -1 : obj.direction;
+  return false;
+}
+
+// ============ TRANSPORT SYSTEM ============
+function spawnTransport(type, cargo) {
+  let capacity, speed, y;
+  if (type === 'cart') {
+    capacity = CFG.CART_CAPACITY; speed = CFG.CART_SPEED; y = CFG.STREET_Y + 8;
+  } else if (type === 'barge') {
+    capacity = CFG.BARGE_CAPACITY; speed = CFG.BARGE_SPEED; y = CFG.RIVER_Y + 30;
+  } else {
+    capacity = CFG.RAILCAR_CAPACITY; speed = CFG.RAIL_SPEED; y = CFG.RIVER_Y - 8;
+  }
+  const t = {
+    type, cargo, y, state: 'moving', loadTimer: 0,
+    amount: cargo === 'cotton' ? capacity : 0,
+    capacity, speed,
+    wheelPhase: Math.random() * Math.PI * 2,
+    loaded: cargo === 'cotton',
+    x: 0, targetX: 0,
+  };
+  if (cargo === 'cotton') {
+    t.x = -60;
+    t.targetX = type === 'cart' ? CFG.STOREHOUSE_X + CFG.STOREHOUSE_W / 2
+              : type === 'barge' ? CFG.MILL_X - 20
+              : CFG.FACTORY_X + CFG.FACTORY_W - 40;
+  } else {
+    t.x = 1300;
+    t.targetX = type === 'cart' ? CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2
+              : type === 'barge' ? CFG.MILL_X
+              : CFG.FACTORY_X + CFG.FACTORY_W - 40;
+    t.loaded = false;
+  }
+  game.transports.push(t);
+}
+
+function updateTransports(dt) {
+  game.cartSpawnTimer -= dt;
+  if (game.cartSpawnTimer <= 0) {
+    const base = game.era === 1 ? 7 : game.era === 2 ? 5 : 3.5;
+    game.cartSpawnTimer = base + Math.random() * 4;
+    const tType = game.era === 1 ? 'cart'
+                : game.era === 2 ? (Math.random() < 0.6 ? 'barge' : 'cart')
+                : (Math.random() < 0.5 ? 'railcar' : Math.random() < 0.7 ? 'barge' : 'cart');
+
+    const cottonDemand = game.cotton < 15 ? 0.85 : game.cotton < 40 ? 0.5 : 0.15;
+    if (Math.random() < cottonDemand + 0.08) {
+      spawnTransport(tType, 'cotton');
+    }
+    const clothSupply = game.cloth > 5 ? 0.75 : game.cloth > 0 ? 0.45 : 0;
+    const priceAttract = Math.max(0.05, 1 - game.clothPrice / 35);
+    if (Math.random() < clothSupply * priceAttract + 0.05 && game.cloth > 0) {
+      spawnTransport(tType, 'cloth');
+    }
+  }
+
+  for (let i = game.transports.length - 1; i >= 0; i--) {
+    const t = game.transports[i];
+    t.wheelPhase += dt * 3;
+    if (t.state === 'moving') {
+      if (moveToward(t, t.targetX, t.y, t.speed * dt)) {
+        if (t.cargo === 'cotton' && t.loaded) {
+          t.state = 'loading'; t.loadTimer = 2;
+        } else if (t.cargo === 'cloth' && !t.loaded && t.targetX < 1200) {
+          t.state = 'loading'; t.loadTimer = 2;
+        } else {
+          // Done at destination, head off-screen
+          t.targetX = t.x > 600 ? 1300 : -80;
+          t.state = 'moving';
+        }
+      }
+    } else if (t.state === 'loading') {
+      t.loadTimer -= dt;
+      if (t.loadTimer <= 0) {
+        if (t.cargo === 'cotton') {
+          const cost = t.amount * game.cottonMarketPrice;
+          if (game.money >= cost) {
+            game.cotton += t.amount;
+            game.money -= cost;
+            game.dailyIncomeTracker -= cost;
+            addMessage(`Bought ${t.amount} cotton for ${Math.floor(cost)}g`, 'info');
+          }
+          t.loaded = false;
+          t.targetX = -80;
+          t.state = 'moving';
+        } else {
+          const sell = Math.min(game.cloth, t.capacity);
+          if (sell > 0) {
+            const revenue = sell * game.clothPrice;
+            game.cloth -= sell;
+            game.money += revenue;
+            game.dailyIncomeTracker += revenue;
+            game.totalClothSold += sell;
+            game.totalRevenue += revenue;
+            addMessage(`Sold ${sell} cloth for ${Math.floor(revenue)}g!`, 'good');
+            t.loaded = true;
+            t.amount = sell;
+          }
+          t.targetX = 1300;
+          t.state = 'moving';
+        }
+      }
+    }
+    if ((t.x < -80 && t.targetX < 0) || (t.x > 1280 && t.targetX > 1200 && t.state === 'moving')) {
+      game.transports.splice(i, 1);
+    }
+  }
+}
+
+// ============ ECONOMY & COMPETITION ============
+function updateEconomy(dt) {
+  for (const comp of game.competitors) {
+    if (Math.random() < dt * 0.05) {
+      if (comp.workers < comp.seats * 0.5) {
+        comp.wages = Math.min(game.wages + 3, comp.wages + 0.3);
+      } else {
+        comp.wages = Math.max(2, comp.wages - 0.1);
+      }
+    }
+  }
+  if (Math.random() < dt * 0.08) {
+    game.cottonMarketPrice = Math.max(2, Math.min(8, game.cottonMarketPrice + (Math.random() - 0.5) * 0.5));
+  }
+}
+
+// ============ TOWN GROWTH ============
+function updateTownGrowth(dt) {
+  game.townGrowthTimer -= dt;
+  if (game.townGrowthTimer <= 0) {
+    const rate = game.era === 1 ? 40 : game.era === 2 ? 20 : 10;
+    game.townGrowthTimer = rate + Math.random() * 15;
+    if (game.townHouses.length < 21) {
+      game.townHouses.push(createTownHouse(game.townHouses.length));
+    }
+    const target = game.townHouses.length * 2 + game.playerHouses.length * CFG.WORKERS_PER_HOUSE;
+    if (game.workers.length < target) {
+      spawnWorker('town');
+      if (game.era >= 2 && game.workers.length < target - 1) spawnWorker('town');
+      if (game.era >= 3 && game.workers.length < target - 2) spawnWorker('town');
+    }
+  }
+}
+
+// ============ ERA PROGRESSION ============
+function checkEraProgression() {
+  if (game.era === 1 && game.hasCanal) {
+    game.era = 2;
+    addMessage('=== ERA II: The Canal Age ===', 'era');
+    addMessage('Barges now transport goods along the canal!', 'era');
+    addMessage('Workers flock to the growing town.', 'info');
+    for (let i = 0; i < 5; i++) spawnWorker('town');
+    document.getElementById('era-display').className = 'era-badge era-2';
+    document.getElementById('era-display').textContent = 'Era II: Canal & Steam';
+  }
+  if (game.era === 2 && game.hasRailroad) {
+    game.era = 3;
+    addMessage('=== ERA III: The Railroad Age ===', 'era');
+    addMessage('Rail cars bring massive transport capacity!', 'era');
+    addMessage('The town booms with new arrivals.', 'info');
+    for (let i = 0; i < 8; i++) spawnWorker('town');
+    for (let i = 0; i < 4; i++) {
+      if (game.townHouses.length < 21) game.townHouses.push(createTownHouse(game.townHouses.length));
+    }
+    document.getElementById('era-display').className = 'era-badge era-3';
+    document.getElementById('era-display').textContent = 'Era III: Rail & Industry';
+  }
+}
+
+// ============ DAY/NIGHT ============
+function updateDayNight(dt) {
+  game.dayProgress += dt / CFG.DAY_LENGTH;
+  if (game.dayProgress >= 1) {
+    game.dayProgress = 0;
+    game.day++;
+    game.lastDayIncome = game.dailyIncomeTracker;
+    game.dailyIncomeTracker = 0;
+    game.clothProducedToday = 0;
+  }
+  game.dayNightCycle = game.dayProgress;
+}
+
+// ============ PARTICLES ============
+function updateSteamPuffs(dt) {
+  if (game.hasSteam) {
+    game.steamPuffTimer -= dt;
+    if (game.steamPuffTimer <= 0) {
+      game.steamPuffTimer = 0.25 + Math.random() * 0.3;
+      game.steamPuffs.push({
+        x: CFG.FACTORY_X + CFG.FACTORY_W - 56, y: CFG.FACTORY_ROOF_Y - 55,
+        size: 3 + Math.random() * 4, life: 1,
+        vx: 2 + Math.random() * 6, vy: -12 - Math.random() * 8,
+      });
+    }
+  }
+  for (let i = game.steamPuffs.length - 1; i >= 0; i--) {
+    const p = game.steamPuffs[i];
+    p.x += p.vx * dt; p.y += p.vy * dt;
+    p.size += dt * 5; p.life -= dt * 0.5;
+    if (p.life <= 0) game.steamPuffs.splice(i, 1);
+  }
+}
+
+function updateSmoke(dt) {
+  for (const h of [...game.townHouses, ...game.playerHouses]) {
+    if (!h.hasSmokestack) continue;
+    if (Math.random() < dt * 1.5) {
+      h.smokeParticles.push({
+        x: h.x + h.w * 0.7, y: h.y - 2,
+        size: 1.5 + Math.random() * 2, life: 1,
+        vx: 0.5 + Math.random() * 2, vy: -6 - Math.random() * 4,
+      });
+    }
+    for (let i = h.smokeParticles.length - 1; i >= 0; i--) {
+      const p = h.smokeParticles[i];
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.size += dt * 2.5; p.life -= dt * 0.7;
+      if (p.life <= 0) h.smokeParticles.splice(i, 1);
+    }
+  }
+}
+
+// ============ MAIN UPDATE ============
+function update(dt) {
+  if (game.speed === 0) return;
+  dt *= game.speed;
+  game.time += dt;
+  game.millAngle += dt * 1.5;
+  game.riverOffset += dt * 20;
+  updateDayNight(dt);
+  updateWorkers(dt);
+  updateTransports(dt);
+  updateEconomy(dt);
+  updateTownGrowth(dt);
+  checkEraProgression();
+  updateSteamPuffs(dt);
+  updateSmoke(dt);
+  updateUI();
+}
+
+// ============ RENDERING ============
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  ctx.translate(OX, OY);
+  ctx.scale(SCALE, SCALE);
+
+  renderSky();
+  renderHills();
+  renderRiver();
+  renderStreet();
+  renderTownHouses();
+  renderPlayerHouses();
+  renderCompetitors();
+  renderFactory();
+  renderWaterMill();
+  if (game.hasSteam) renderSteamEngine();
+  renderLooms();
+  renderStorehouse();
+  renderWarehouse();
+  renderWorkers();
+  renderTransports();
+  renderSteamPuffs();
+  renderHUD();
+
+  ctx.restore();
+}
+
+function renderSky() {
+  const t = game.dayNightCycle;
+  let bright = 1;
+  if (t < 0.12) bright = 0.45 + t / 0.12 * 0.55;
+  else if (t > 0.88) bright = 0.45 + (1 - t) / 0.12 * 0.55;
+  const r = Math.floor(135 * bright);
+  const g = Math.floor(206 * bright);
+  const b = Math.floor(235 * bright);
+  const grad = ctx.createLinearGradient(0, 0, 0, 250);
+  grad.addColorStop(0, `rgb(${r},${g},${b})`);
+  grad.addColorStop(1, `rgb(${Math.floor(176*bright)},${Math.floor(224*bright)},${Math.floor(230*bright)})`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1200, CFG.GROUND_Y);
+
+  ctx.fillStyle = `rgba(255,255,255,${0.25 * bright})`;
+  const cx = ((game.time * 4) % 1500) - 100;
+  drawCloud(cx, 40, 60);
+  drawCloud((cx + 500) % 1500 - 100, 65, 50);
+  drawCloud((cx + 950) % 1500 - 100, 30, 55);
+}
+
+function drawCloud(x, y, size) {
+  ctx.beginPath();
+  ctx.arc(x, y, size * 0.38, 0, Math.PI * 2);
+  ctx.arc(x + size * 0.3, y - size * 0.14, size * 0.32, 0, Math.PI * 2);
+  ctx.arc(x + size * 0.55, y, size * 0.36, 0, Math.PI * 2);
+  ctx.arc(x + size * 0.28, y + size * 0.08, size * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function renderHills() {
+  ctx.fillStyle = COL.hill1;
+  ctx.beginPath();
+  ctx.moveTo(0, 180);
+  for (let x = 0; x <= 1200; x += 15) {
+    ctx.lineTo(x, 140 + Math.sin(x * 0.008 + 1) * 30 + Math.sin(x * 0.015) * 15);
+  }
+  ctx.lineTo(1200, 300); ctx.lineTo(0, 300);
+  ctx.fill();
+
+  ctx.fillStyle = COL.hill2;
+  ctx.beginPath();
+  ctx.moveTo(0, 210);
+  for (let x = 0; x <= 1200; x += 15) {
+    ctx.lineTo(x, 180 + Math.sin(x * 0.01 + 3) * 20 + Math.sin(x * 0.02 + 1) * 10);
+  }
+  ctx.lineTo(1200, 300); ctx.lineTo(0, 300);
+  ctx.fill();
+
+  ctx.fillStyle = '#3A5A2A';
+  for (let i = 0; i < 25; i++) {
+    const tx = i * 50 + 15;
+    const ty = 155 + Math.sin(tx * 0.01 + 1) * 25 + Math.sin(tx * 0.015) * 15;
+    drawTree(tx, ty, 7 + Math.sin(i * 2.3) * 3);
+  }
+}
+
+function drawTree(x, y, s) {
+  ctx.fillStyle = '#5A3A20';
+  ctx.fillRect(x - 1, y, 3, s * 0.55);
+  ctx.fillStyle = '#2A6A1A';
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.5, y); ctx.lineTo(x + 1, y - s); ctx.lineTo(x + s * 0.5, y);
+  ctx.fill();
+  ctx.fillStyle = '#3A7A2A';
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.38, y - s * 0.3); ctx.lineTo(x + 1, y - s * 1.15); ctx.lineTo(x + s * 0.38, y - s * 0.3);
+  ctx.fill();
+}
+
+function renderRiver() {
+  const ry = CFG.RIVER_Y;
+  const rh = CFG.RIVER_H;
+
+  if (game.hasCanal) {
+    ctx.fillStyle = '#606060';
+    ctx.fillRect(0, ry - 5, 1200, rh + 10);
+    ctx.fillStyle = COL.canal;
+    ctx.fillRect(0, ry, 1200, rh);
+  } else {
+    ctx.fillStyle = COL.water1;
+    ctx.beginPath();
+    ctx.moveTo(0, ry);
+    for (let x = 0; x <= 1200; x += 4) {
+      ctx.lineTo(x, ry + Math.sin((x + game.riverOffset) * 0.02) * 3);
+    }
+    ctx.lineTo(1200, ry + rh); ctx.lineTo(0, ry + rh);
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = 'rgba(120,200,255,0.25)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 10; i++) {
+    const wx = ((game.riverOffset * 0.7 + i * 130) % 1500) - 100;
+    const wy = ry + 8 + (i % 5) * (rh / 5) + Math.sin(game.time * 2 + i) * 2;
+    ctx.beginPath();
+    ctx.moveTo(wx, wy); ctx.lineTo(wx + 25 + Math.sin(i) * 8, wy);
+    ctx.stroke();
+  }
+
+  if (game.hasRailroad) {
+    const ry2 = ry - 14;
+    ctx.fillStyle = '#6A5A4A';
+    ctx.fillRect(0, ry2, 1200, 11);
+    ctx.fillStyle = '#999';
+    ctx.fillRect(0, ry2 + 1, 1200, 2);
+    ctx.fillRect(0, ry2 + 8, 1200, 2);
+    ctx.fillStyle = '#5A4A3A';
+    for (let x = 0; x < 1200; x += 14) ctx.fillRect(x, ry2, 7, 11);
+  }
+}
+
+function renderStreet() {
+  ctx.fillStyle = COL.ground;
+  ctx.fillRect(0, CFG.GROUND_Y, 1200, CFG.RIVER_Y - CFG.GROUND_Y);
+  ctx.fillStyle = COL.road;
+  ctx.fillRect(0, CFG.STREET_Y - 5, 1200, CFG.GROUND_Y - CFG.STREET_Y + 10);
+  ctx.fillStyle = '#B8A880';
+  for (let x = 0; x < 1200; x += 28) ctx.fillRect(x, CFG.STREET_Y + 7, 14, 2);
+}
+
+function renderTownHouses() {
+  for (const h of game.townHouses) {
+    ctx.fillStyle = h.color;
+    ctx.fillRect(h.x, h.y, h.w, h.h);
+    ctx.fillStyle = COL.roof;
+    ctx.beginPath();
+    ctx.moveTo(h.x - 3, h.y); ctx.lineTo(h.x + h.w / 2, h.y - 14); ctx.lineTo(h.x + h.w + 3, h.y);
+    ctx.fill();
+    ctx.fillStyle = '#4A3020';
+    ctx.fillRect(h.x + h.w / 2 - 5, h.y + h.h - 17, 10, 17);
+    const lit = game.dayNightCycle > 0.82 || game.dayNightCycle < 0.12;
+    ctx.fillStyle = lit ? COL.windowLit : COL.windowDark;
+    ctx.fillRect(h.x + 5, h.y + 8, 10, 10);
+    ctx.fillRect(h.x + h.w - 15, h.y + 8, 10, 10);
+    ctx.strokeStyle = '#3A2A1A'; ctx.lineWidth = 0.8;
+    ctx.strokeRect(h.x + 5, h.y + 8, 10, 10);
+    ctx.strokeRect(h.x + h.w - 15, h.y + 8, 10, 10);
+    for (const p of h.smokeParticles) {
+      ctx.fillStyle = `rgba(150,140,130,${p.life * 0.35})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+
+function renderPlayerHouses() {
+  for (const h of game.playerHouses) {
+    ctx.fillStyle = h.color;
+    ctx.fillRect(h.x, h.y, h.w, h.h);
+    ctx.fillStyle = '#5A4A3A';
+    ctx.beginPath();
+    ctx.moveTo(h.x - 2, h.y); ctx.lineTo(h.x + h.w / 2, h.y - 11); ctx.lineTo(h.x + h.w + 2, h.y);
+    ctx.fill();
+    ctx.fillStyle = '#3A2A18';
+    ctx.fillRect(h.x + h.w / 2 - 4, h.y + h.h - 15, 9, 15);
+    ctx.fillStyle = COL.windowLit;
+    ctx.fillRect(h.x + 4, h.y + 6, 8, 8);
+    ctx.fillRect(h.x + h.w - 12, h.y + 6, 8, 8);
+    for (const p of h.smokeParticles) {
+      ctx.fillStyle = `rgba(150,140,130,${p.life * 0.35})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+
+function renderCompetitors() {
+  for (const comp of game.competitors) {
+    const bx = comp.x, bw = comp.w;
+    const by = CFG.COMP_ROOF_Y;
+    const bh = CFG.GROUND_Y - by;
+
+    ctx.fillStyle = comp === game.competitors[0] ? '#8A5A3A' : '#7A6A5A';
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.fillStyle = COL.roof2;
+    ctx.fillRect(bx - 4, by - 8, bw + 8, 12);
+
+    ctx.fillStyle = '#2A1A0A';
+    ctx.fillRect(bx + 8, by + 6, bw - 16, 16);
+    ctx.fillStyle = '#D0B080';
+    ctx.font = '9px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(comp.name, bx + bw / 2, by + 18);
+
+    for (let row = 0; row < 2; row++) {
+      for (let col = 0; col < 3; col++) {
+        const wx = bx + 10 + col * 34;
+        const wy = by + 32 + row * 48;
+        const workerHere = col + row * 3 < comp.workers;
+        ctx.fillStyle = workerHere ? COL.windowLit : COL.windowDark;
+        ctx.fillRect(wx, wy, 24, 30);
+        ctx.strokeStyle = '#4A3A2A'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(wx, wy, 24, 30);
+        ctx.beginPath();
+        ctx.moveTo(wx + 12, wy); ctx.lineTo(wx + 12, wy + 30);
+        ctx.moveTo(wx, wy + 15); ctx.lineTo(wx + 24, wy + 15);
+        ctx.stroke();
+      }
+    }
+
+    ctx.fillStyle = '#3A2A18';
+    ctx.fillRect(bx + bw / 2 - 10, by + bh - 32, 20, 32);
+    ctx.fillStyle = '#C0A060';
+    ctx.beginPath(); ctx.arc(bx + bw / 2 + 5, by + bh - 16, 2, 0, Math.PI * 2); ctx.fill();
+
+    // Competitor wages label
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(bx + 5, by + bh - 48, bw - 10, 14);
+    ctx.fillStyle = '#D0C0A0';
+    ctx.font = '8px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(`Wages: ${Math.floor(comp.wages)}g`, bx + bw / 2, by + bh - 38);
+  }
+}
+
+function renderFactory() {
+  const fx = CFG.FACTORY_X, fw = CFG.FACTORY_W;
+  const fy = CFG.FACTORY_ROOF_Y;
+  const fh = CFG.FACTORY_FLOOR_Y - fy;
+
+  ctx.fillStyle = COL.factoryWall;
+  ctx.fillRect(fx, fy, fw, fh);
+  ctx.fillStyle = COL.factoryInner;
+  ctx.fillRect(fx + 5, fy + 5, fw - 10, fh - 5);
+
+  // Wooden floor
+  ctx.fillStyle = '#A08060';
+  ctx.fillRect(fx + 5, CFG.FACTORY_FLOOR_Y - 8, fw - 10, 8);
+  ctx.strokeStyle = '#8A6A4A'; ctx.lineWidth = 0.5;
+  for (let x = fx + 5; x < fx + fw - 5; x += 18) {
+    ctx.beginPath(); ctx.moveTo(x, CFG.FACTORY_FLOOR_Y - 8); ctx.lineTo(x, CFG.FACTORY_FLOOR_Y); ctx.stroke();
+  }
+
+  // Roof
+  ctx.fillStyle = COL.roof;
+  ctx.fillRect(fx - 8, fy - 12, fw + 16, 15);
+  ctx.fillStyle = COL.roof2;
+  ctx.beginPath();
+  ctx.moveTo(fx - 8, fy - 12); ctx.lineTo(fx + fw / 2, fy - 38); ctx.lineTo(fx + fw + 8, fy - 12);
+  ctx.fill();
+
+  // Sign
+  ctx.fillStyle = '#2A1A0A';
+  ctx.fillRect(fx + fw / 2 - 55, fy - 8, 110, 14);
+  ctx.fillStyle = '#F0D080';
+  ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('YOUR FACTORY', fx + fw / 2, fy + 3);
+
+  // Beams
+  ctx.strokeStyle = '#6A4A2A'; ctx.lineWidth = 3;
+  for (let x = fx + 50; x < fx + fw; x += 80) {
+    ctx.beginPath(); ctx.moveTo(x, fy + 2); ctx.lineTo(x, fy + 28); ctx.stroke();
+  }
+
+  // Section labels
+  ctx.font = '8px monospace'; ctx.fillStyle = '#6A5A4A'; ctx.textAlign = 'center';
+  ctx.fillText('STOREHOUSE', CFG.STOREHOUSE_X + CFG.STOREHOUSE_W / 2, fy + 18);
+  ctx.fillText('WORKSHOP', CFG.LOOM_AREA_X + CFG.LOOM_AREA_W / 2, fy + 18);
+  ctx.fillText('WAREHOUSE', CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2, fy + 18);
+
+  // Dividers
+  ctx.strokeStyle = '#8A7A6A'; ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(CFG.LOOM_AREA_X - 5, fy + 24); ctx.lineTo(CFG.LOOM_AREA_X - 5, CFG.FACTORY_FLOOR_Y);
+  ctx.moveTo(CFG.WAREHOUSE_X - 5, fy + 24); ctx.lineTo(CFG.WAREHOUSE_X - 5, CFG.FACTORY_FLOOR_Y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Front wall base + door
+  ctx.fillStyle = COL.factoryWall;
+  ctx.fillRect(fx, CFG.FACTORY_FLOOR_Y, fw, 4);
+  ctx.fillStyle = '#4A3A28';
+  ctx.fillRect(fx + 10, CFG.STREET_Y - 28, 22, 32);
+  ctx.fillStyle = '#C0A060';
+  ctx.beginPath(); ctx.arc(fx + 26, CFG.STREET_Y - 12, 2, 0, Math.PI * 2); ctx.fill();
+
+  // Steam chimney
+  if (game.hasSteam) {
+    ctx.fillStyle = '#505050';
+    ctx.fillRect(fx + fw - 65, fy - 58, 18, 48);
+    ctx.fillStyle = '#606060';
+    ctx.fillRect(fx + fw - 68, fy - 62, 24, 8);
+  }
+}
+
+function renderStorehouse() {
+  const sx = CFG.STOREHOUSE_X + 8;
+  const sy = CFG.FACTORY_FLOOR_Y;
+  const maxVis = 30;
+  const bales = Math.min(Math.floor(game.cotton), maxVis);
+  for (let i = 0; i < bales; i++) {
+    const row = Math.floor(i / 5);
+    const col = i % 5;
+    const bx = sx + col * 17;
+    const by = sy - 18 - row * 15;
+    ctx.fillStyle = '#F0E8D0';
+    ctx.fillRect(bx, by, 14, 13);
+    ctx.fillStyle = '#E0D8C0';
+    ctx.fillRect(bx + 1, by + 1, 12, 11);
+    ctx.strokeStyle = '#8A7A5A'; ctx.lineWidth = 0.5;
+    ctx.strokeRect(bx + 3, by + 2, 8, 9);
+  }
+  if (game.cotton > 0) {
+    ctx.fillStyle = '#5A4A3A';
+    ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(Math.floor(game.cotton).toString(), CFG.STOREHOUSE_X + CFG.STOREHOUSE_W / 2, sy - 5 - Math.ceil(bales / 5) * 15);
+  }
+}
+
+function renderLooms() {
+  for (const loom of game.looms) {
+    const lx = loom.x, ly = loom.y;
+    const lw = CFG.LOOM_W, lh = CFG.LOOM_H;
+
+    ctx.fillStyle = loom.type === 'hand' ? COL.wood : '#606060';
+    ctx.fillRect(lx, ly, 4, lh);
+    ctx.fillRect(lx + lw - 4, ly, 4, lh);
+    ctx.fillRect(lx, ly, lw, 5);
+    ctx.fillRect(lx, ly + lh - 5, lw, 5);
+    ctx.fillRect(lx, ly + lh * 0.5 - 2, lw, 4);
+
+    if (loom.active) {
+      ctx.strokeStyle = '#D0C0A0'; ctx.lineWidth = 0.5;
+      for (let t = 0; t < 6; t++) {
+        ctx.beginPath();
+        ctx.moveTo(lx + 6 + t * 4.5, ly + 6);
+        ctx.lineTo(lx + 6 + t * 4.5, ly + lh - 6);
+        ctx.stroke();
+      }
+      const sX = lx + 4 + loom.shuttlePos * (lw - 14);
+      ctx.fillStyle = '#C08020';
+      ctx.fillRect(sX, ly + lh * 0.5 - 4, 8, 6);
+      ctx.fillStyle = '#333';
+      ctx.fillRect(lx, ly + lh + 3, lw, 4);
+      ctx.fillStyle = loom.type === 'hand' ? '#60A060' : '#6080D0';
+      ctx.fillRect(lx, ly + lh + 3, lw * loom.progress, 4);
+    }
+
+    if (loom.type === 'power') {
+      ctx.fillStyle = '#4A6A9A';
+      ctx.font = '7px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('PWR', lx + lw / 2, ly - 3);
+    }
+
+    if (!loom.worker && !loom.active) {
+      ctx.fillStyle = `rgba(255,200,50,${0.2 + Math.sin(game.time * 3) * 0.15})`;
+      ctx.fillRect(lx - 2, ly - 2, lw + 4, lh + 4);
+      ctx.fillStyle = '#A09060';
+      ctx.font = '7px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('EMPTY', lx + lw / 2, ly + lh + 12);
+    }
+  }
+}
+
+function renderWarehouse() {
+  const wx = CFG.WAREHOUSE_X + 8;
+  const wy = CFG.FACTORY_FLOOR_Y;
+  const maxVis = 30;
+  const bales = Math.min(Math.floor(game.cloth), maxVis);
+  for (let i = 0; i < bales; i++) {
+    const row = Math.floor(i / 5);
+    const col = i % 5;
+    const bx = wx + col * 17;
+    const by = wy - 18 - row * 15;
+    ctx.fillStyle = '#4060B0';
+    ctx.fillRect(bx, by, 14, 13);
+    ctx.fillStyle = '#5070C0';
+    ctx.fillRect(bx + 1, by + 1, 12, 11);
+    ctx.strokeStyle = '#2A3A6A'; ctx.lineWidth = 0.5;
+    ctx.strokeRect(bx + 3, by + 2, 8, 9);
+  }
+  if (game.cloth > 0) {
+    ctx.fillStyle = '#2A3A6A';
+    ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(Math.floor(game.cloth).toString(), CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2, wy - 5 - Math.ceil(bales / 5) * 15);
+  }
+}
+
+function renderWaterMill() {
+  const mx = CFG.MILL_X, my = CFG.MILL_Y, mr = CFG.MILL_R;
+
+  ctx.fillStyle = '#6A5A4A';
+  ctx.fillRect(mx - 22, my - mr - 12, 44, mr + 18);
+
+  ctx.save();
+  ctx.translate(mx, my);
+  ctx.rotate(game.millAngle);
+  ctx.strokeStyle = '#5A3A1A'; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(0, 0, mr, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = COL.wood;
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    ctx.save(); ctx.rotate(a);
+    ctx.fillRect(-2, -mr + 2, 4, mr * 0.38);
+    ctx.fillStyle = COL.wood2;
+    ctx.fillRect(-6, -mr, 12, 7);
+    ctx.fillStyle = COL.wood;
+    ctx.restore();
+  }
+  ctx.fillStyle = '#4A3A2A';
+  ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  ctx.strokeStyle = '#5A4A3A'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(mx - 22, my - 14);
+  ctx.lineTo(CFG.FACTORY_X + CFG.FACTORY_W - 5, my - 14);
+  ctx.stroke();
+}
+
+function renderSteamEngine() {
+  const sx = CFG.FACTORY_X + CFG.FACTORY_W - 85;
+  const sy = CFG.FACTORY_FLOOR_Y - 48;
+  ctx.fillStyle = '#505050';
+  ctx.fillRect(sx, sy, 50, 38);
+  ctx.fillStyle = '#606060';
+  ctx.fillRect(sx + 4, sy + 4, 42, 30);
+  ctx.strokeStyle = '#707070'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(sx + 25, sy); ctx.lineTo(sx + 25, sy - 18); ctx.stroke();
+  ctx.fillStyle = `rgba(255,${100 + Math.sin(game.time * 8) * 50|0},0,0.55)`;
+  ctx.fillRect(sx + 8, sy + 30, 34, 8);
+  ctx.fillStyle = '#A0A0A0';
+  ctx.font = '7px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('STEAM', sx + 25, sy - 3);
+}
+
+function renderSteamPuffs() {
+  for (const p of game.steamPuffs) {
+    ctx.fillStyle = `rgba(200,200,200,${p.life * 0.45})`;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function renderWorkers() {
+  for (const w of game.workers) {
+    if (!w.visible) continue;
+    const bob = w.state === WS.WORKING ? 0 : Math.sin(w.bobPhase) * 1.5;
+    const wx = w.x, wy = w.y + bob;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(wx - 4, wy + CFG.WORKER_H - 2, 9, 3);
+
+    ctx.fillStyle = w.color;
+    ctx.fillRect(wx - 4, wy + 5, 9, 10);
+
+    ctx.fillStyle = '#E8C8A0';
+    ctx.fillRect(wx - 3, wy, 7, 6);
+
+    ctx.fillStyle = w.hatColor;
+    ctx.fillRect(wx - 4, wy - 2, 9, 3);
+
+    if (w.state !== WS.WORKING) {
+      const lp = Math.sin(w.bobPhase * 1.5);
+      ctx.fillStyle = '#4A3A2A';
+      ctx.fillRect(wx - 2 + lp, wy + 15, 3, 4);
+      ctx.fillRect(wx + 1 - lp, wy + 15, 3, 4);
+    } else {
+      ctx.fillStyle = '#4A3A2A';
+      ctx.fillRect(wx - 2, wy + 15, 3, 3);
+      ctx.fillRect(wx + 1, wy + 15, 3, 3);
+    }
+
+    if (w.carryingCloth) {
+      ctx.fillStyle = COL.cloth;
+      ctx.fillRect(wx + 5, wy + 3, 6, 5);
+    }
+
+    if (w.state === WS.DECIDING) {
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.beginPath(); ctx.arc(wx + 8, wy - 8, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#333';
+      ctx.font = '8px monospace'; ctx.textAlign = 'center';
+      ctx.fillText('?', wx + 8, wy - 5);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath(); ctx.arc(wx + 5, wy - 2, 2, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+}
+
+function renderTransports() {
+  for (const t of game.transports) {
+    if (t.type === 'cart') renderCart(t);
+    else if (t.type === 'barge') renderBarge(t);
+    else renderRailcar(t);
+  }
+}
+
+function renderCart(t) {
+  const cx = t.x, cy = t.y;
+  // Horse
+  ctx.fillStyle = '#8A6A4A';
+  ctx.fillRect(cx - 22, cy - 12, 16, 10);
+  ctx.fillRect(cx - 20, cy - 2, 3, 7);
+  ctx.fillRect(cx - 12, cy - 2, 3, 7);
+  ctx.fillRect(cx - 26, cy - 16, 8, 8);
+  // Cart
+  ctx.fillStyle = '#6A5030';
+  ctx.fillRect(cx, cy - 13, CFG.CART_W, 15);
+  ctx.fillStyle = '#5A4020';
+  ctx.fillRect(cx + 2, cy - 11, CFG.CART_W - 4, 11);
+  if ((t.loaded && t.cargo === 'cotton') || (t.loaded && t.cargo === 'cloth') || (t.cargo === 'cotton' && t.amount > 0)) {
+    ctx.fillStyle = t.cargo === 'cotton' ? COL.cotton : COL.cloth;
+    ctx.fillRect(cx + 4, cy - 13 - 6, CFG.CART_W - 8, 6);
+  }
+  ctx.fillStyle = '#3A2A1A';
+  ctx.beginPath();
+  ctx.arc(cx + 8, cy + 3, 5, 0, Math.PI * 2);
+  ctx.arc(cx + CFG.CART_W - 8, cy + 3, 5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function renderBarge(t) {
+  const bx = t.x, by = t.y;
+  ctx.fillStyle = '#5A4A3A';
+  ctx.beginPath();
+  ctx.moveTo(bx - 30, by); ctx.lineTo(bx - 22, by + 14);
+  ctx.lineTo(bx + 38, by + 14); ctx.lineTo(bx + 48, by);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#7A6A5A';
+  ctx.fillRect(bx - 26, by - 3, 62, 5);
+  if (t.loaded || t.amount > 0) {
+    ctx.fillStyle = t.cargo === 'cotton' ? COL.cotton : COL.cloth;
+    ctx.fillRect(bx - 14, by - 12, 38, 10);
+  }
+}
+
+function renderRailcar(t) {
+  const rx = t.x, ry = t.y;
+  ctx.fillStyle = '#4A4A4A';
+  ctx.fillRect(rx - 24, ry - 17, 48, 17);
+  ctx.fillStyle = '#5A5A5A';
+  ctx.fillRect(rx - 22, ry - 15, 44, 13);
+  if (t.loaded || t.amount > 0) {
+    ctx.fillStyle = t.cargo === 'cotton' ? '#E8E0D0' : '#3050A0';
+    ctx.fillRect(rx - 18, ry - 24, 36, 8);
+  }
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.arc(rx - 14, ry + 2, 4, 0, Math.PI * 2);
+  ctx.arc(rx + 14, ry + 2, 4, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function renderHUD() {
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  ctx.fillRect(5, 5, 130, 28);
+  ctx.fillStyle = '#F0D080';
+  ctx.font = 'bold 12px monospace'; ctx.textAlign = 'left';
+  ctx.fillText(`Day ${game.day}`, 12, 22);
+  ctx.fillStyle = '#333';
+  ctx.fillRect(72, 12, 54, 10);
+  ctx.fillStyle = game.dayNightCycle < 0.5 ? '#F0D060' : '#4060A0';
+  ctx.fillRect(73, 13, 52 * game.dayNightCycle, 8);
+
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(140, 5, 170, 28);
+  ctx.fillStyle = '#C0A060';
+  ctx.font = '10px monospace'; ctx.textAlign = 'left';
+  const eraNames = ['', 'I: Water & Handlooms', 'II: Canal & Steam', 'III: Rail & Industry'];
+  ctx.fillText(`Era ${eraNames[game.era]}`, 148, 22);
+
+  const streetW = game.workers.filter(w => w.visible && (w.state === WS.ON_STREET || w.state === WS.DECIDING || w.state === WS.WALKING_TO_STREET)).length;
+  if (streetW > 0) {
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(330, CFG.STREET_Y - 35, 110, 18);
+    ctx.fillStyle = '#E0D0B0';
+    ctx.font = '9px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(`${streetW} seeking work`, 385, CFG.STREET_Y - 22);
+  }
+}
+
+// ============ UI PANEL UPDATES ============
+function updateUI() {
+  document.getElementById('s-gold').textContent = Math.floor(game.money);
+  const incEl = document.getElementById('s-income');
+  incEl.textContent = (game.lastDayIncome >= 0 ? '+' : '') + Math.floor(game.lastDayIncome);
+  incEl.style.color = game.lastDayIncome >= 0 ? '#80d080' : '#d08080';
+  document.getElementById('s-cotton').textContent = Math.floor(game.cotton);
+  document.getElementById('s-cloth').textContent = Math.floor(game.cloth);
+  document.getElementById('s-energy-src').textContent = game.hasSteam ? 'Steam + Water' : 'Water Mill';
+  document.getElementById('s-energy').textContent = `${game.energyUsed} / ${game.energyMax}`;
+  document.getElementById('energy-fill').style.width = game.energyMax > 0 ? `${(game.energyUsed / game.energyMax) * 100}%` : '0%';
+
+  const active = game.looms.filter(l => l.active).length;
+  const myW = game.workers.filter(w => w.employer === 'player').length;
+  document.getElementById('s-looms').textContent = `${game.looms.length} (${active} active)`;
+  document.getElementById('s-workers').textContent = myW;
+  document.getElementById('s-production').textContent = game.clothProducedToday;
+  document.getElementById('s-pop').textContent = game.workers.length;
+  document.getElementById('s-avail').textContent = game.workers.filter(w => w.state === WS.ON_STREET || w.state === WS.DECIDING).length;
+  document.getElementById('s-houses').textContent = game.playerHouses.length;
+
+  document.getElementById('btn-loom').disabled = game.money < CFG.HAND_LOOM_COST || game.looms.length >= CFG.MAX_LOOMS;
+  document.getElementById('btn-power-loom').disabled = game.money < CFG.POWER_LOOM_COST || game.looms.length >= CFG.MAX_LOOMS || game.energyUsed >= game.energyMax;
+  document.getElementById('btn-house').disabled = game.money < CFG.HOUSE_COST || game.playerHouses.length >= 6;
+  document.getElementById('btn-steam').disabled = game.money < CFG.STEAM_COST || game.hasSteam;
+  document.getElementById('btn-canal').disabled = game.money < CFG.CANAL_COST || game.hasCanal;
+  document.getElementById('btn-rail').disabled = game.money < CFG.RAIL_COST || game.hasRailroad || !game.hasCanal;
+
+  if (game.hasSteam) document.getElementById('btn-steam').textContent = 'Steam Engine (Built)';
+  if (game.hasCanal) document.getElementById('btn-canal').textContent = 'Canal Works (Built)';
+  if (game.hasRailroad) document.getElementById('btn-rail').textContent = 'Railroad (Built)';
+}
+
+// ============ PLAYER ACTIONS ============
+function setWage(v) { game.wages = parseInt(v); document.getElementById('wage-val').textContent = v; }
+function setPrice(v) { game.clothPrice = parseInt(v); document.getElementById('price-val').textContent = v; }
+function setSpeed(s) {
+  game.speed = s;
+  document.querySelectorAll('#speed-controls button').forEach((b, i) => {
+    b.classList.toggle('active', [0, 1, 2, 4][i] === s);
+  });
+}
+
+function buyLoom() {
+  if (game.money < CFG.HAND_LOOM_COST || game.looms.length >= CFG.MAX_LOOMS) return;
+  game.money -= CFG.HAND_LOOM_COST;
+  game.looms.push(createLoom(game.looms.length, 'hand'));
+  addMessage('Built a new hand loom.', 'good');
+}
+function buyPowerLoom() {
+  if (game.money < CFG.POWER_LOOM_COST || game.looms.length >= CFG.MAX_LOOMS) return;
+  game.money -= CFG.POWER_LOOM_COST;
+  game.looms.push(createLoom(game.looms.length, 'power'));
+  addMessage('Built a power loom! Uses 1 energy.', 'good');
+}
+function buildHouse() {
+  if (game.money < CFG.HOUSE_COST || game.playerHouses.length >= 6) return;
+  game.money -= CFG.HOUSE_COST;
+  game.playerHouses.push(createPlayerHouse(game.playerHouses.length));
+  for (let i = 0; i < CFG.WORKERS_PER_HOUSE; i++) spawnWorker('player');
+  addMessage(`Built worker housing. +${CFG.WORKERS_PER_HOUSE} workers!`, 'good');
+}
+function buySteam() {
+  if (game.money < CFG.STEAM_COST || game.hasSteam) return;
+  game.money -= CFG.STEAM_COST;
+  game.hasSteam = true;
+  game.energyMax = CFG.STEAM_ENERGY;
+  addMessage('=== STEAM ENGINE INSTALLED ===', 'era');
+  addMessage(`Energy capacity: ${CFG.STEAM_ENERGY}!`, 'good');
+}
+function buildCanal() {
+  if (game.money < CFG.CANAL_COST || game.hasCanal) return;
+  game.money -= CFG.CANAL_COST;
+  game.hasCanal = true;
+  addMessage('=== CANAL COMPLETE ===', 'era');
+  addMessage('River straightened. Barges now operate!', 'info');
+}
+function buildRailroad() {
+  if (game.money < CFG.RAIL_COST || game.hasRailroad || !game.hasCanal) return;
+  game.money -= CFG.RAIL_COST;
+  game.hasRailroad = true;
+  addMessage('=== RAILROAD BUILT ===', 'era');
+  addMessage('Rail cars bring massive capacity!', 'info');
+}
+
+// ============ MESSAGES ============
+function addMessage(text, type) {
+  const el = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg-' + (type || 'info');
+  div.textContent = `[Day ${game.day}] ${text}`;
+  el.appendChild(div);
+  el.scrollTop = el.scrollHeight;
+  while (el.children.length > 60) el.removeChild(el.firstChild);
+}
+
+// ============ GAME LOOP ============
+let lastTime = 0;
+function gameLoop(ts) {
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+  update(dt);
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+// ============ START ============
+initGame();
+requestAnimationFrame(function(ts) { lastTime = ts; gameLoop(ts); });
+
+window.setWage = setWage;
+window.setPrice = setPrice;
+window.setSpeed = setSpeed;
+window.buyLoom = buyLoom;
+window.buyPowerLoom = buyPowerLoom;
+window.buildHouse = buildHouse;
+window.buySteam = buySteam;
+window.buildCanal = buildCanal;
+window.buildRailroad = buildRailroad;
+</script>
+</body>
+</html>
