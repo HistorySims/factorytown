@@ -8,7 +8,8 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; overflow: hidden; }
 body { background: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; color: #e0d6c8; position: relative; }
-#game-canvas { display: block; cursor: default; flex: 1; min-width: 0; }
+#game-canvas { display: block; cursor: grab; flex: 1; min-width: 0; }
+#game-canvas:active { cursor: grabbing; }
 #panel { width: 280px; min-width: 280px; background: #2a1f14; border-left: 3px solid #5a3a1a; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; transition: margin-right 0.3s ease, transform 0.3s ease; z-index: 10; -webkit-overflow-scrolling: touch; }
 #panel.collapsed { margin-right: -283px; }
 #panel h1 { font-size: 18px; color: #f0c060; text-align: center; border-bottom: 2px solid #5a3a1a; padding-bottom: 6px; font-variant: small-caps; letter-spacing: 2px; }
@@ -170,7 +171,6 @@ function togglePanel() {
   panelOpen = !panelOpen;
   panel.classList.toggle('collapsed', !panelOpen);
   toggleBtn.classList.toggle('panel-open', panelOpen);
-  toggleBtn.innerHTML = panelOpen ? '&#9776;' : '&#9776;';
   setTimeout(resize, 320);
   resize();
 }
@@ -180,7 +180,9 @@ function toggleSection(h2) {
 }
 
 // ============ LAYOUT & SIZING ============
-let W, H, SCALE, OX, OY;
+const WORLD_W = 2600;
+const WORLD_H = 680;
+let W, H, SCALE;
 function isMobile() { return window.innerWidth <= 800; }
 function resize() {
   const pw = panelOpen && !isMobile() ? 283 : 0;
@@ -188,17 +190,84 @@ function resize() {
   canvas.height = window.innerHeight;
   W = canvas.width;
   H = canvas.height;
-  SCALE = Math.min(W / 1200, H / 680);
-  OX = (W - 1200 * SCALE) / 2;
-  OY = (H - 680 * SCALE) / 2;
+  // Scale to fit height; pan horizontally
+  SCALE = H / WORLD_H;
+  if (SCALE < 0.5) SCALE = 0.5;
+  clampCamera();
 }
 resize();
 window.addEventListener('resize', resize);
 
-// ============ TOUCH SUPPORT ============
-document.addEventListener('touchmove', function(e) {
-  if (e.target === canvas) e.preventDefault();
+// ============ CAMERA ============
+let camX = 600; // world X at left edge of screen
+let camVelX = 0;
+let dragging = false;
+let dragStartX = 0;
+let dragStartCam = 0;
+let dragMoved = false;
+
+function clampCamera() {
+  const viewW = W / SCALE;
+  const maxCam = WORLD_W - viewW;
+  if (camX < 0) camX = 0;
+  if (camX > maxCam) camX = maxCam;
+  if (maxCam < 0) camX = maxCam / 2;
+}
+
+// Mouse pan
+canvas.addEventListener('mousedown', function(e) {
+  dragging = true; dragMoved = false;
+  dragStartX = e.clientX; dragStartCam = camX;
+  camVelX = 0;
+});
+window.addEventListener('mousemove', function(e) {
+  if (!dragging) return;
+  const dx = e.clientX - dragStartX;
+  if (Math.abs(dx) > 3) dragMoved = true;
+  camX = dragStartCam - dx / SCALE;
+  clampCamera();
+});
+window.addEventListener('mouseup', function() { dragging = false; });
+
+// Touch pan
+let touchId = null;
+canvas.addEventListener('touchstart', function(e) {
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    touchId = t.identifier;
+    dragging = true; dragMoved = false;
+    dragStartX = t.clientX; dragStartCam = camX;
+    camVelX = 0;
+  }
+}, { passive: true });
+canvas.addEventListener('touchmove', function(e) {
+  if (!dragging) return;
+  for (const t of e.changedTouches) {
+    if (t.identifier === touchId) {
+      const dx = t.clientX - dragStartX;
+      if (Math.abs(dx) > 3) dragMoved = true;
+      camX = dragStartCam - dx / SCALE;
+      clampCamera();
+    }
+  }
+  e.preventDefault();
 }, { passive: false });
+canvas.addEventListener('touchend', function(e) {
+  for (const t of e.changedTouches) {
+    if (t.identifier === touchId) { dragging = false; touchId = null; }
+  }
+}, { passive: true });
+
+// Keyboard pan
+const keysDown = {};
+window.addEventListener('keydown', function(e) { keysDown[e.key] = true; });
+window.addEventListener('keyup', function(e) { keysDown[e.key] = false; });
+function updateCamera(dt) {
+  const spd = 500;
+  if (keysDown['ArrowLeft'] || keysDown['a']) camX -= spd * dt;
+  if (keysDown['ArrowRight'] || keysDown['d']) camX += spd * dt;
+  clampCamera();
+}
 
 // ============ CONFIGURATION ============
 const CFG = {
@@ -206,26 +275,26 @@ const CFG = {
   GROUND_Y: 462,
   RIVER_Y: 475,
   RIVER_H: 90,
-  FACTORY_X: 560,
+  FACTORY_X: 1300,
   FACTORY_W: 560,
   FACTORY_ROOF_Y: 168,
   FACTORY_FLOOR_Y: 462,
-  STOREHOUSE_X: 575,
+  STOREHOUSE_X: 1315,
   STOREHOUSE_W: 105,
-  LOOM_AREA_X: 690,
+  LOOM_AREA_X: 1430,
   LOOM_AREA_W: 290,
-  WAREHOUSE_X: 990,
+  WAREHOUSE_X: 1730,
   WAREHOUSE_W: 105,
-  MILL_X: 1110,
+  MILL_X: 1850,
   MILL_Y: 455,
   MILL_R: 32,
-  COMP1_X: 195,
-  COMP1_W: 115,
-  COMP2_X: 330,
-  COMP2_W: 115,
+  COMP1_X: 700,
+  COMP1_W: 130,
+  COMP2_X: 880,
+  COMP2_W: 130,
   COMP_ROOF_Y: 250,
-  TOWN_X: 10,
-  TOWN_W: 170,
+  TOWN_X: 30,
+  TOWN_W: 600,
   WORKER_SPEED: 60,
   WORKER_H: 18,
   WORKER_W: 10,
@@ -352,26 +421,27 @@ function createLoom(index, type) {
 }
 
 function createTownHouse(index) {
-  const row = Math.floor(index / 3);
-  const col = index % 3;
+  // Houses spread along the town area, wrapping to second row if needed
+  const spacing = 60;
+  const maxPerRow = 10;
+  const row = Math.floor(index / maxPerRow);
+  const col = index % maxPerRow;
   return {
-    x: CFG.TOWN_X + 10 + col * 55,
-    y: CFG.GROUND_Y - 50 - row * 58,
-    w: 45, h: 48,
-    color: ['#8B6848', '#9A7858', '#7A5838', '#A08060', '#6A5030'][index % 5],
-    hasSmokestack: Math.random() > 0.4,
+    x: CFG.TOWN_X + 15 + col * spacing,
+    y: CFG.GROUND_Y - 52 - row * 62,
+    w: 48, h: 50,
+    color: ['#8B6848', '#9A7858', '#7A5838', '#A08060', '#6A5030', '#8A7050', '#7A6040', '#9A8060'][index % 8],
+    hasSmokestack: Math.random() > 0.35,
     smokeParticles: [],
   };
 }
 
 function createPlayerHouse(index) {
-  const row = Math.floor(index / 2);
-  const col = index % 2;
   return {
-    x: CFG.FACTORY_X - 110 + col * 50,
-    y: CFG.GROUND_Y - 50 - row * 55,
-    w: 42, h: 45,
-    color: '#7A6A50',
+    x: CFG.FACTORY_X - 180 - index * 55,
+    y: CFG.GROUND_Y - 50,
+    w: 46, h: 48,
+    color: ['#7A6A50', '#6A5A40', '#8A7A60', '#7A7050', '#6A6040', '#8A7A58'][index % 6],
     hasSmokestack: true,
     smokeParticles: [],
   };
@@ -395,8 +465,8 @@ const WORKER_COLORS = ['#D04040', '#4080D0', '#40A040', '#C0A030', '#A050C0', '#
 function spawnWorker(origin) {
   const isPlayer = origin === 'player';
   const homeX = isPlayer
-    ? CFG.FACTORY_X - 90 + Math.random() * 60
-    : CFG.TOWN_X + 10 + Math.random() * (CFG.TOWN_W - 20);
+    ? CFG.FACTORY_X - 180 + Math.random() * 120
+    : CFG.TOWN_X + 20 + Math.random() * (CFG.TOWN_W - 40);
   const w = {
     id: game.workerIdCounter++,
     x: homeX,
@@ -436,7 +506,7 @@ function updateWorkers(dt) {
         w.atHomeTimer -= dt;
         if (w.atHomeTimer <= 0) {
           w.state = WS.WALKING_TO_STREET;
-          w.targetX = 200 + Math.random() * 350;
+          w.targetX = 500 + Math.random() * 800;
           w.visible = true;
           w.y = CFG.STREET_Y;
           w.x = w.homeX;
@@ -456,7 +526,7 @@ function updateWorkers(dt) {
         w.decisionTimer -= dt;
         w.walkTimer -= dt;
         if (w.walkTimer <= 0) {
-          w.targetX = 150 + Math.random() * 400;
+          w.targetX = 500 + Math.random() * 800;
           w.walkTimer = 2 + Math.random() * 3;
         }
         moveToward(w, w.targetX, CFG.STREET_Y, CFG.WORKER_SPEED * 0.4 * dt);
@@ -610,13 +680,13 @@ function chooseEmployer(w) {
   const openLooms = game.looms.filter(l => l.worker === null && (!l.needsEnergy || game.energyUsed < game.energyMax));
   if (openLooms.length > 0) {
     const dist = Math.abs(w.x - (CFG.FACTORY_X + 40));
-    const score = game.wages * 1.5 - dist * 0.004 + w.preferPlayer * 10 + Math.random() * 2;
+    const score = game.wages * 1.5 - dist * 0.002 + w.preferPlayer * 10 + Math.random() * 2;
     options.push({ employer: 'player', score, targetX: CFG.FACTORY_X + 20, targetY: CFG.STREET_Y });
   }
   for (const comp of game.competitors) {
     if (comp.workers < comp.seats) {
       const dist = Math.abs(w.x - (comp.x + comp.w / 2));
-      const score = comp.wages * 1.5 - dist * 0.004 + Math.random() * 2;
+      const score = comp.wages * 1.5 - dist * 0.002 + Math.random() * 2;
       options.push({ employer: comp.name, score, targetX: comp.x + comp.w / 2, targetY: CFG.STREET_Y });
     }
   }
@@ -664,7 +734,7 @@ function spawnTransport(type, cargo) {
               : type === 'barge' ? CFG.MILL_X - 20
               : CFG.FACTORY_X + CFG.FACTORY_W - 40;
   } else {
-    t.x = 1300;
+    t.x = WORLD_W + 80;
     t.targetX = type === 'cart' ? CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2
               : type === 'barge' ? CFG.MILL_X
               : CFG.FACTORY_X + CFG.FACTORY_W - 40;
@@ -700,11 +770,11 @@ function updateTransports(dt) {
       if (moveToward(t, t.targetX, t.y, t.speed * dt)) {
         if (t.cargo === 'cotton' && t.loaded) {
           t.state = 'loading'; t.loadTimer = 2;
-        } else if (t.cargo === 'cloth' && !t.loaded && t.targetX < 1200) {
+        } else if (t.cargo === 'cloth' && !t.loaded && t.targetX < WORLD_W) {
           t.state = 'loading'; t.loadTimer = 2;
         } else {
           // Done at destination, head off-screen
-          t.targetX = t.x > 600 ? 1300 : -80;
+          t.targetX = t.x > WORLD_W / 2 ? WORLD_W + 80 : -80;
           t.state = 'moving';
         }
       }
@@ -735,12 +805,12 @@ function updateTransports(dt) {
             t.loaded = true;
             t.amount = sell;
           }
-          t.targetX = 1300;
+          t.targetX = WORLD_W + 80;
           t.state = 'moving';
         }
       }
     }
-    if ((t.x < -80 && t.targetX < 0) || (t.x > 1280 && t.targetX > 1200 && t.state === 'moving')) {
+    if ((t.x < -80 && t.targetX < 0) || (t.x > WORLD_W + 60 && t.targetX > WORLD_W && t.state === 'moving')) {
       game.transports.splice(i, 1);
     }
   }
@@ -860,6 +930,7 @@ function updateSmoke(dt) {
 
 // ============ MAIN UPDATE ============
 function update(dt) {
+  updateCamera(dt);
   if (game.speed === 0) return;
   dt *= game.speed;
   game.time += dt;
@@ -880,8 +951,8 @@ function update(dt) {
 function render() {
   ctx.clearRect(0, 0, W, H);
   ctx.save();
-  ctx.translate(OX, OY);
   ctx.scale(SCALE, SCALE);
+  ctx.translate(-camX, 0);
 
   renderSky();
   renderHills();
@@ -899,9 +970,12 @@ function render() {
   renderWorkers();
   renderTransports();
   renderSteamPuffs();
-  renderHUD();
+  renderWorldLabels();
 
   ctx.restore();
+
+  // HUD in screen space (not affected by camera)
+  renderHUD();
 }
 
 function renderSky() {
@@ -916,13 +990,15 @@ function renderSky() {
   grad.addColorStop(0, `rgb(${r},${g},${b})`);
   grad.addColorStop(1, `rgb(${Math.floor(176*bright)},${Math.floor(224*bright)},${Math.floor(230*bright)})`);
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 1200, CFG.GROUND_Y);
+  ctx.fillRect(0, 0, WORLD_W, CFG.GROUND_Y);
 
   ctx.fillStyle = `rgba(255,255,255,${0.25 * bright})`;
-  const cx = ((game.time * 4) % 1500) - 100;
+  const cRange = WORLD_W + 300;
+  const cx = ((game.time * 4) % cRange) - 100;
   drawCloud(cx, 40, 60);
-  drawCloud((cx + 500) % 1500 - 100, 65, 50);
-  drawCloud((cx + 950) % 1500 - 100, 30, 55);
+  drawCloud((cx + cRange * 0.33) % cRange - 100, 65, 50);
+  drawCloud((cx + cRange * 0.63) % cRange - 100, 30, 55);
+  drawCloud((cx + cRange * 0.82) % cRange - 100, 50, 48);
 }
 
 function drawCloud(x, y, size) {
@@ -938,23 +1014,24 @@ function renderHills() {
   ctx.fillStyle = COL.hill1;
   ctx.beginPath();
   ctx.moveTo(0, 180);
-  for (let x = 0; x <= 1200; x += 15) {
+  for (let x = 0; x <= WORLD_W; x += 15) {
     ctx.lineTo(x, 140 + Math.sin(x * 0.008 + 1) * 30 + Math.sin(x * 0.015) * 15);
   }
-  ctx.lineTo(1200, 300); ctx.lineTo(0, 300);
+  ctx.lineTo(WORLD_W, 300); ctx.lineTo(0, 300);
   ctx.fill();
 
   ctx.fillStyle = COL.hill2;
   ctx.beginPath();
   ctx.moveTo(0, 210);
-  for (let x = 0; x <= 1200; x += 15) {
+  for (let x = 0; x <= WORLD_W; x += 15) {
     ctx.lineTo(x, 180 + Math.sin(x * 0.01 + 3) * 20 + Math.sin(x * 0.02 + 1) * 10);
   }
-  ctx.lineTo(1200, 300); ctx.lineTo(0, 300);
+  ctx.lineTo(WORLD_W, 300); ctx.lineTo(0, 300);
   ctx.fill();
 
   ctx.fillStyle = '#3A5A2A';
-  for (let i = 0; i < 25; i++) {
+  const treeCount = Math.floor(WORLD_W / 50);
+  for (let i = 0; i < treeCount; i++) {
     const tx = i * 50 + 15;
     const ty = 155 + Math.sin(tx * 0.01 + 1) * 25 + Math.sin(tx * 0.015) * 15;
     drawTree(tx, ty, 7 + Math.sin(i * 2.3) * 3);
@@ -980,24 +1057,25 @@ function renderRiver() {
 
   if (game.hasCanal) {
     ctx.fillStyle = '#606060';
-    ctx.fillRect(0, ry - 5, 1200, rh + 10);
+    ctx.fillRect(0, ry - 5, WORLD_W, rh + 10);
     ctx.fillStyle = COL.canal;
-    ctx.fillRect(0, ry, 1200, rh);
+    ctx.fillRect(0, ry, WORLD_W, rh);
   } else {
     ctx.fillStyle = COL.water1;
     ctx.beginPath();
     ctx.moveTo(0, ry);
-    for (let x = 0; x <= 1200; x += 4) {
+    for (let x = 0; x <= WORLD_W; x += 4) {
       ctx.lineTo(x, ry + Math.sin((x + game.riverOffset) * 0.02) * 3);
     }
-    ctx.lineTo(1200, ry + rh); ctx.lineTo(0, ry + rh);
+    ctx.lineTo(WORLD_W, ry + rh); ctx.lineTo(0, ry + rh);
     ctx.fill();
   }
 
   ctx.strokeStyle = 'rgba(120,200,255,0.25)';
   ctx.lineWidth = 1;
-  for (let i = 0; i < 10; i++) {
-    const wx = ((game.riverOffset * 0.7 + i * 130) % 1500) - 100;
+  const rippleCount = Math.floor(WORLD_W / 130) + 2;
+  for (let i = 0; i < rippleCount; i++) {
+    const wx = ((game.riverOffset * 0.7 + i * 130) % (WORLD_W + 200)) - 100;
     const wy = ry + 8 + (i % 5) * (rh / 5) + Math.sin(game.time * 2 + i) * 2;
     ctx.beginPath();
     ctx.moveTo(wx, wy); ctx.lineTo(wx + 25 + Math.sin(i) * 8, wy);
@@ -1007,22 +1085,22 @@ function renderRiver() {
   if (game.hasRailroad) {
     const ry2 = ry - 14;
     ctx.fillStyle = '#6A5A4A';
-    ctx.fillRect(0, ry2, 1200, 11);
+    ctx.fillRect(0, ry2, WORLD_W, 11);
     ctx.fillStyle = '#999';
-    ctx.fillRect(0, ry2 + 1, 1200, 2);
-    ctx.fillRect(0, ry2 + 8, 1200, 2);
+    ctx.fillRect(0, ry2 + 1, WORLD_W, 2);
+    ctx.fillRect(0, ry2 + 8, WORLD_W, 2);
     ctx.fillStyle = '#5A4A3A';
-    for (let x = 0; x < 1200; x += 14) ctx.fillRect(x, ry2, 7, 11);
+    for (let x = 0; x < WORLD_W; x += 14) ctx.fillRect(x, ry2, 7, 11);
   }
 }
 
 function renderStreet() {
   ctx.fillStyle = COL.ground;
-  ctx.fillRect(0, CFG.GROUND_Y, 1200, CFG.RIVER_Y - CFG.GROUND_Y);
+  ctx.fillRect(0, CFG.GROUND_Y, WORLD_W, CFG.RIVER_Y - CFG.GROUND_Y);
   ctx.fillStyle = COL.road;
-  ctx.fillRect(0, CFG.STREET_Y - 5, 1200, CFG.GROUND_Y - CFG.STREET_Y + 10);
+  ctx.fillRect(0, CFG.STREET_Y - 5, WORLD_W, CFG.GROUND_Y - CFG.STREET_Y + 10);
   ctx.fillStyle = '#B8A880';
-  for (let x = 0; x < 1200; x += 28) ctx.fillRect(x, CFG.STREET_Y + 7, 14, 2);
+  for (let x = 0; x < WORLD_W; x += 28) ctx.fillRect(x, CFG.STREET_Y + 7, 14, 2);
 }
 
 function renderTownHouses() {
@@ -1445,7 +1523,20 @@ function renderRailcar(t) {
   ctx.fill();
 }
 
+function renderWorldLabels() {
+  const streetW = game.workers.filter(w => w.visible && (w.state === WS.ON_STREET || w.state === WS.DECIDING || w.state === WS.WALKING_TO_STREET)).length;
+  if (streetW > 0) {
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.fillRect(750, CFG.STREET_Y - 35, 110, 18);
+    ctx.fillStyle = '#E0D0B0';
+    ctx.font = '9px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(`${streetW} seeking work`, 805, CFG.STREET_Y - 22);
+  }
+}
+
 function renderHUD() {
+  // Rendered in screen space (after ctx.restore)
+  ctx.save();
   ctx.fillStyle = 'rgba(0,0,0,0.45)';
   ctx.fillRect(5, 5, 130, 28);
   ctx.fillStyle = '#F0D080';
@@ -1462,15 +1553,7 @@ function renderHUD() {
   ctx.font = '10px monospace'; ctx.textAlign = 'left';
   const eraNames = ['', 'I: Water & Handlooms', 'II: Canal & Steam', 'III: Rail & Industry'];
   ctx.fillText(`Era ${eraNames[game.era]}`, 148, 22);
-
-  const streetW = game.workers.filter(w => w.visible && (w.state === WS.ON_STREET || w.state === WS.DECIDING || w.state === WS.WALKING_TO_STREET)).length;
-  if (streetW > 0) {
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.fillRect(330, CFG.STREET_Y - 35, 110, 18);
-    ctx.fillStyle = '#E0D0B0';
-    ctx.font = '9px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(`${streetW} seeking work`, 385, CFG.STREET_Y - 22);
-  }
+  ctx.restore();
 }
 
 // ============ UI PANEL UPDATES ============
