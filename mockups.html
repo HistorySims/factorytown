@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>River &amp; Thread — View Mockups</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; background: #1c1712; }
+#c { display: block; cursor: grab; }
+#c:active { cursor: grabbing; }
+#tabs { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; flex-wrap: wrap; justify-content: center; max-width: 100%; padding: 0 10px; }
+.tab { font-family: Georgia, serif; font-size: 14px; padding: 8px 16px; border-radius: 20px; border: 2px solid rgba(48,35,24,0.4); background: rgba(244,238,218,0.92); color: #3a2c1e; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,0.25); white-space: nowrap; }
+.tab.active { background: #93392c; color: #f4eeda; border-color: #6e2a20; }
+#caption { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); max-width: 780px; width: calc(100% - 32px); background: rgba(244,238,218,0.94); border: 2px solid rgba(48,35,24,0.35); border-radius: 12px; padding: 10px 18px; font-family: Georgia, serif; color: #3a2c1e; font-size: 14px; line-height: 1.45; text-align: center; z-index: 10; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+#caption b { color: #93392c; }
+#hint { position: fixed; top: 58px; left: 50%; transform: translateX(-50%); font-family: Georgia, serif; font-size: 12px; font-style: italic; color: rgba(244,238,218,0.95); z-index: 10; text-shadow: 0 1px 3px rgba(0,0,0,0.7); pointer-events: none; }
+@media (max-width: 700px) {
+  .tab { font-size: 12px; padding: 6px 10px; }
+  #caption { font-size: 12px; padding: 8px 12px; }
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="tabs"></div>
+<div id="hint">drag to pan &#8596;</div>
+<div id="caption"></div>
+
+<script>
+// ============================================================
+// RIVER & THREAD — four view-style mockups in folk-art paint
+// ============================================================
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const TAU = Math.PI * 2;
+const WORLD_H = 760;
+let W, H, SCALE;
+
+const VIEWS = [
+  { name: '1 · Folk Canvas', worldW: 2400, cam: 700,
+    desc: '<b>Folk Canvas.</b> Today’s side view repainted as a naive oil painting — chunky buildings, dappled trees, 3× sprites, ducks in the millpond. Least rework; the cutaway factory stays front and center.' },
+  { name: '2 · 2.5-D Township', worldW: 2000, cam: 300,
+    desc: '<b>2.5-D Township.</b> A tilted three-quarter view. The town fills in row by row behind Main Street, so watching it evolve is the star. Buildings get simple painted tops and sides for depth.' },
+  { name: '3 · Quilt Map', worldW: 1700, cam: 100,
+    desc: '<b>Quilt Map.</b> A naive bird’s-eye sampler — stitched field patches, a road and river threading the town to your works. The whole economy is visible at once; least intimate, most legible.' },
+  { name: '4 · Street Level', worldW: 3600, cam: 1750,
+    desc: '<b>Street Level.</b> Camera down at street height with parallax hills behind. Sprites are huge — every loom, bale, and face reads clearly. Most immersive, most panning.' },
+];
+let cur = 0;
+
+// ---------- layout ----------
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  W = canvas.width; H = canvas.height;
+  SCALE = H / WORLD_H;
+  clampCam();
+}
+function clampCam() {
+  const v = VIEWS[cur];
+  const viewW = W / SCALE;
+  const maxCam = v.worldW - viewW;
+  if (v.cam < 0) v.cam = 0;
+  if (v.cam > maxCam) v.cam = maxCam;
+  if (maxCam < 0) v.cam = maxCam / 2;
+}
+window.addEventListener('resize', resize);
+
+// ---------- pan ----------
+let dragging = false, dragX = 0, dragCam = 0;
+canvas.addEventListener('mousedown', e => { dragging = true; dragX = e.clientX; dragCam = VIEWS[cur].cam; });
+window.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  VIEWS[cur].cam = dragCam - (e.clientX - dragX) / SCALE;
+  clampCam();
+});
+window.addEventListener('mouseup', () => dragging = false);
+canvas.addEventListener('touchstart', e => {
+  dragging = true; dragX = e.touches[0].clientX; dragCam = VIEWS[cur].cam;
+}, { passive: true });
+canvas.addEventListener('touchmove', e => {
+  if (!dragging) return;
+  VIEWS[cur].cam = dragCam - (e.touches[0].clientX - dragX) / SCALE;
+  clampCam();
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchend', () => dragging = false, { passive: true });
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' || e.key === 'a') { VIEWS[cur].cam -= 60; clampCam(); }
+  if (e.key === 'ArrowRight' || e.key === 'd') { VIEWS[cur].cam += 60; clampCam(); }
+});
+
+// ---------- tabs ----------
+const tabsEl = document.getElementById('tabs');
+const capEl = document.getElementById('caption');
+VIEWS.forEach((v, i) => {
+  const b = document.createElement('button');
+  b.className = 'tab' + (i === 0 ? ' active' : '');
+  b.textContent = v.name;
+  b.onclick = () => {
+    cur = i;
+    document.querySelectorAll('.tab').forEach((t, j) => t.classList.toggle('active', j === i));
+    capEl.innerHTML = VIEWS[i].desc;
+    clampCam();
+  };
+  tabsEl.appendChild(b);
+});
+capEl.innerHTML = VIEWS[0].desc;
+
+// ---------- painterly grain (screen-space, like real canvas) ----------
+const tex = document.createElement('canvas');
+tex.width = tex.height = 256;
+const tctx = tex.getContext('2d');
+for (let i = 0; i < 1000; i++) {
+  const x = Math.random() * 256, y = Math.random() * 256;
+  tctx.fillStyle = Math.random() < 0.5 ? 'rgba(60,45,25,0.045)' : 'rgba(255,250,230,0.05)';
+  tctx.fillRect(x, y, 1.5 + Math.random() * 2, 1 + Math.random() * 1.5);
+}
+let grain = null;
+
+// ============================================================
+// SHARED FOLK-ART HELPERS
+// ============================================================
+function hash(a, b) { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); }
+function tri(p) { p = p % 2; if (p < 0) p += 2; return p < 1 ? p : 2 - p; }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function ink(w, a) {
+  ctx.strokeStyle = `rgba(48,35,24,${a == null ? 0.6 : a})`;
+  ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+}
+
+function cloud(x, y, s) {
+  ctx.fillStyle = '#f4eeda';
+  ctx.beginPath();
+  ctx.arc(x, y, s * 0.32, 0, TAU);
+  ctx.arc(x + s * 0.28, y - s * 0.13, s * 0.27, 0, TAU);
+  ctx.arc(x + s * 0.56, y - s * 0.02, s * 0.3, 0, TAU);
+  ctx.arc(x + s * 0.3, y + s * 0.1, s * 0.25, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(180,170,140,0.28)';
+  ctx.beginPath();
+  ctx.ellipse(x + s * 0.28, y + s * 0.2, s * 0.4, s * 0.08, 0, 0, TAU);
+  ctx.fill();
+}
+
+function bird(x, y, s) {
+  ink(Math.max(1.5, s * 0.14), 0.85);
+  ctx.beginPath();
+  ctx.moveTo(x - s, y);
+  ctx.quadraticCurveTo(x - s * 0.5, y - s * 0.7, x, y);
+  ctx.quadraticCurveTo(x + s * 0.5, y - s * 0.7, x + s, y);
+  ctx.stroke();
+}
+
+function mound(cx, by, rx, ry, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.ellipse(cx, by, rx, ry, 0, Math.PI, 0);
+  ctx.fill();
+}
+
+function folkTree(x, y, s, v) {
+  // trunk
+  ctx.fillStyle = '#4a352a';
+  ink(Math.max(1, s * 0.05));
+  const th = s * 0.5, tw = s * 0.07;
+  ctx.beginPath();
+  ctx.moveTo(x - tw, y); ctx.lineTo(x - tw * 0.6, y - th);
+  ctx.lineTo(x + tw * 0.6, y - th); ctx.lineTo(x + tw, y);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // canopy blobs
+  const cols = [['#5c7a3c', '#8aa858'], ['#6d8a44', '#a0bb62'], ['#77974a', '#abc66c']];
+  const c = cols[Math.floor(v * 3) % 3];
+  const r = s * (0.4 + v * 0.1);
+  const cy = y - th - r * 0.75;
+  ctx.fillStyle = c[0];
+  ctx.beginPath();
+  ctx.arc(x, cy, r, 0, TAU);
+  ctx.arc(x - r * 0.5, cy + r * 0.28, r * 0.62, 0, TAU);
+  ctx.arc(x + r * 0.5, cy + r * 0.28, r * 0.62, 0, TAU);
+  ctx.fill();
+  ink(Math.max(1, s * 0.045), 0.45);
+  ctx.beginPath(); ctx.arc(x, cy, r, 0, TAU); ctx.stroke();
+  // dapple dots
+  ctx.fillStyle = c[1];
+  for (let i = 0; i < 9; i++) {
+    const a = hash(i, x) * TAU, rr = hash(i + 9, x) * r * 0.75;
+    ctx.beginPath();
+    ctx.arc(x + Math.cos(a) * rr, cy + Math.sin(a) * rr * 0.85, s * 0.045 + hash(i, y) * s * 0.03, 0, TAU);
+    ctx.fill();
+  }
+}
+
+function fenceRun(x1, x2, y, s) {
+  s = s || 1;
+  ctx.fillStyle = '#5f4630';
+  ink(Math.max(1, 1.5 * s), 0.5);
+  for (let x = x1; x <= x2; x += 48 * s) {
+    ctx.beginPath();
+    ctx.rect(x - 2.5 * s, y - 27 * s, 5 * s, 27 * s);
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.strokeStyle = '#5f4630';
+  ctx.lineWidth = 3.5 * s;
+  for (const ry of [9 * s, 19 * s]) {
+    ctx.beginPath();
+    let px = x1;
+    ctx.moveTo(x1, y - ry + (hash(x1, ry) - 0.5) * 4 * s);
+    for (let x = x1 + 40 * s; x <= x2 + 39 * s; x += 40 * s) {
+      const xx = Math.min(x, x2);
+      ctx.lineTo(xx, y - ry + (hash(xx, ry) - 0.5) * 4 * s);
+      px = xx;
+    }
+    ctx.stroke();
+  }
+}
+
+function flowerPatch(x1, x2, y, n, s) {
+  s = s || 1;
+  const petalCols = ['#e3bf45', '#cf7f3a', '#c94f39', '#e3bf45'];
+  for (let i = 0; i < n; i++) {
+    const fx = lerp(x1, x2, i / Math.max(1, n - 1)) + (hash(i, y) - 0.5) * 18 * s;
+    const fy = y - hash(i, x1) * 8 * s;
+    const hgt = (12 + hash(i, 3) * 8) * s;
+    ctx.strokeStyle = '#5c7a3c'; ctx.lineWidth = 1.6 * s;
+    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx, fy - hgt); ctx.stroke();
+    const col = petalCols[Math.floor(hash(i, 7) * petalCols.length)];
+    ctx.fillStyle = col;
+    for (let p = 0; p < 6; p++) {
+      const a = p / 6 * TAU;
+      ctx.beginPath();
+      ctx.arc(fx + Math.cos(a) * 3.4 * s, fy - hgt + Math.sin(a) * 3.4 * s, 2.4 * s, 0, TAU);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#7a5426';
+    ctx.beginPath(); ctx.arc(fx, fy - hgt, 2.2 * s, 0, TAU); ctx.fill();
+  }
+}
+
+function duck(x, y, s, col, t) {
+  const bob = Math.sin(t * 2 + x) * s * 0.06;
+  y += bob;
+  ink(Math.max(1, s * 0.07), 0.7);
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.ellipse(x, y, s * 0.5, s * 0.3, 0, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  // tail flick
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.45, y - s * 0.05);
+  ctx.lineTo(x - s * 0.72, y - s * 0.3);
+  ctx.lineTo(x - s * 0.4, y - s * 0.2);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // head
+  ctx.beginPath();
+  ctx.arc(x + s * 0.42, y - s * 0.38, s * 0.2, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  // beak
+  ctx.fillStyle = '#cf7f3a';
+  ctx.beginPath();
+  ctx.moveTo(x + s * 0.58, y - s * 0.42);
+  ctx.lineTo(x + s * 0.78, y - s * 0.34);
+  ctx.lineTo(x + s * 0.58, y - s * 0.28);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(40,30,20,0.9)';
+  ctx.beginPath(); ctx.arc(x + s * 0.46, y - s * 0.42, s * 0.035, 0, TAU); ctx.fill();
+}
+
+function cow(x, y, s) {
+  ink(Math.max(1, s * 0.05), 0.6);
+  ctx.fillStyle = '#c99a5f';
+  ctx.beginPath();
+  ctx.ellipse(x, y - s * 0.42, s * 0.52, s * 0.28, 0, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#8a6540'; ctx.lineWidth = s * 0.07;
+  for (const lx of [-0.32, -0.18, 0.18, 0.32]) {
+    ctx.beginPath();
+    ctx.moveTo(x + lx * s, y - s * 0.2);
+    ctx.lineTo(x + lx * s, y);
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#c99a5f';
+  ink(Math.max(1, s * 0.05), 0.6);
+  ctx.beginPath();
+  ctx.ellipse(x + s * 0.52, y - s * 0.56, s * 0.16, s * 0.13, 0.2, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = 'rgba(40,30,20,0.85)';
+  ctx.beginPath(); ctx.arc(x + s * 0.56, y - s * 0.58, s * 0.025, 0, TAU); ctx.fill();
+}
+
+function sheep(x, y, s) {
+  ink(Math.max(1, s * 0.08), 0.6);
+  ctx.fillStyle = '#f2efe6';
+  ctx.beginPath();
+  ctx.ellipse(x, y - s * 0.35, s * 0.5, s * 0.32, 0, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#d8d4c8';
+  ctx.beginPath(); ctx.arc(x + s * 0.42, y - s * 0.48, s * 0.16, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(48,35,24,0.7)'; ctx.lineWidth = s * 0.07;
+  for (const lx of [-0.22, 0.22]) {
+    ctx.beginPath(); ctx.moveTo(x + lx * s, y - s * 0.1); ctx.lineTo(x + lx * s, y); ctx.stroke();
+  }
+}
+
+// worker: y = feet, s = full height
+function folkWorker(x, y, s, col, phase, opts) {
+  opts = opts || {};
+  // shadow
+  ctx.fillStyle = 'rgba(40,30,20,0.12)';
+  ctx.beginPath(); ctx.ellipse(x, y, s * 0.2, s * 0.045, 0, 0, TAU); ctx.fill();
+  // legs
+  const swing = opts.still ? 0 : Math.sin(phase) * s * 0.09;
+  ctx.strokeStyle = '#3a2c1e'; ctx.lineWidth = Math.max(1.5, s * 0.06); ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.06, y - s * 0.28); ctx.lineTo(x - s * 0.08 + swing, y);
+  ctx.moveTo(x + s * 0.06, y - s * 0.28); ctx.lineTo(x + s * 0.08 - swing, y);
+  ctx.stroke();
+  // body
+  ink(Math.max(1.5, s * 0.045), 0.65);
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.arc(x, y - s * 0.44, s * 0.225, 0, TAU); ctx.fill(); ctx.stroke();
+  // head
+  ctx.fillStyle = '#e0b489';
+  ctx.beginPath(); ctx.arc(x, y - s * 0.72, s * 0.135, 0, TAU); ctx.fill(); ctx.stroke();
+  // hat
+  ctx.fillStyle = opts.hat || '#4a352a';
+  ctx.beginPath(); ctx.ellipse(x, y - s * 0.81, s * 0.19, s * 0.05, 0, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.rect(x - s * 0.1, y - s * 0.92, s * 0.2, s * 0.11); ctx.fill(); ctx.stroke();
+  // cloth bundle
+  if (opts.carry) {
+    ctx.fillStyle = '#3d5a8f';
+    ink(Math.max(1.5, s * 0.045), 0.65);
+    ctx.beginPath();
+    ctx.ellipse(x + s * 0.26, y - s * 0.56, s * 0.14, s * 0.11, 0.3, 0, TAU);
+    ctx.fill(); ctx.stroke();
+  }
+}
+
+// house: x = left edge, base = ground line
+function folkHouse(x, base, w, h, body, roof, opts) {
+  opts = opts || {};
+  ctx.save();
+  ctx.translate(x + w / 2, base);
+  ctx.rotate((hash(x, base) - 0.5) * 0.035);
+  ctx.translate(-(x + w / 2), -base);
+  ink(Math.max(1.5, w * 0.018), 0.6);
+  // body
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.rect(x, base - h, w, h); ctx.fill(); ctx.stroke();
+  // roof
+  ctx.fillStyle = roof;
+  ctx.beginPath();
+  ctx.moveTo(x - w * 0.1, base - h);
+  ctx.lineTo(x + w / 2, base - h - h * 0.58);
+  ctx.lineTo(x + w * 1.1, base - h);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // chimney
+  if (opts.chimney !== false) {
+    ctx.fillStyle = '#4a352a';
+    ctx.beginPath(); ctx.rect(x + w * 0.66, base - h - h * 0.5, w * 0.11, h * 0.3); ctx.fill(); ctx.stroke();
+  }
+  // door
+  ctx.fillStyle = '#4a352a';
+  const dw = w * 0.2, dh = h * 0.48;
+  ctx.beginPath(); ctx.rect(x + w / 2 - dw / 2, base - dh, dw, dh); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#e3bf45';
+  ctx.beginPath(); ctx.arc(x + w / 2 + dw * 0.26, base - dh * 0.5, w * 0.016 + 1.2, 0, TAU); ctx.fill();
+  // windows
+  const wins = opts.windows == null ? 2 : opts.windows;
+  const lit = opts.lit || 0;
+  const ww = w * 0.2, wh = w * 0.19;
+  const slots = [
+    [x + w * 0.22, base - h * 0.68],
+    [x + w * 0.78, base - h * 0.68],
+    [x + w * 0.22, base - h * 0.3],
+    [x + w * 0.78, base - h * 0.3],
+  ].slice(0, wins);
+  for (let i = 0; i < slots.length; i++) {
+    const sx = slots[i][0], sy = slots[i][1];
+    ctx.fillStyle = '#efe6cf';
+    ctx.beginPath(); ctx.rect(sx - ww / 2 - w * 0.014, sy - wh / 2 - w * 0.014, ww + w * 0.028, wh + w * 0.028); ctx.fill();
+    ctx.fillStyle = i < lit ? '#f2cf6a' : '#3f4c55';
+    ctx.beginPath(); ctx.rect(sx - ww / 2, sy - wh / 2, ww, wh); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#efe6cf'; ctx.lineWidth = Math.max(1, w * 0.014);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy - wh / 2); ctx.lineTo(sx, sy + wh / 2);
+    ctx.moveTo(sx - ww / 2, sy); ctx.lineTo(sx + ww / 2, sy);
+    ctx.stroke();
+    ink(Math.max(1.5, w * 0.018), 0.6);
+  }
+  ctx.restore();
+}
+
+// competitor shop: tall facade, big window grid that lights per worker
+function shopFacade(x, base, w, h, body, name, litCount, sBig) {
+  ink(Math.max(1.5, w * 0.014), 0.6);
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.rect(x, base - h, w, h); ctx.fill(); ctx.stroke();
+  // parapet + dark roof band
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath(); ctx.rect(x - w * 0.05, base - h - h * 0.07, w * 1.1, h * 0.09); ctx.fill(); ctx.stroke();
+  // sign
+  ctx.fillStyle = '#4a382c';
+  const sgH = h * 0.11;
+  ctx.beginPath(); ctx.rect(x + w * 0.08, base - h + h * 0.05, w * 0.84, sgH); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#f4eeda';
+  ctx.font = `italic ${Math.max(10, sgH * 0.62)}px Georgia`;
+  ctx.textAlign = 'center';
+  ctx.fillText(name, x + w / 2, base - h + h * 0.05 + sgH * 0.72);
+  // window grid 3 x 2
+  const ww = w * 0.2, wh = h * 0.19;
+  let idx = 0;
+  for (let row = 0; row < 2; row++) {
+    for (let col = 0; col < 3; col++) {
+      const wx = x + w * (0.19 + col * 0.31), wy = base - h * (0.62 - row * 0.27);
+      const isLit = idx < litCount;
+      if (isLit) {
+        ctx.fillStyle = 'rgba(242,207,106,0.3)';
+        ctx.beginPath(); ctx.arc(wx, wy, ww * 0.85, 0, TAU); ctx.fill();
+      }
+      ctx.fillStyle = '#efe6cf';
+      ctx.beginPath(); ctx.rect(wx - ww / 2 - 2, wy - wh / 2 - 2, ww + 4, wh + 4); ctx.fill();
+      ctx.fillStyle = isLit ? '#f2cf6a' : '#3f4c55';
+      ctx.beginPath(); ctx.rect(wx - ww / 2, wy - wh / 2, ww, wh); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#efe6cf'; ctx.lineWidth = Math.max(1, w * 0.01);
+      ctx.beginPath();
+      ctx.moveTo(wx, wy - wh / 2); ctx.lineTo(wx, wy + wh / 2);
+      ctx.moveTo(wx - ww / 2, wy); ctx.lineTo(wx + ww / 2, wy);
+      ctx.stroke();
+      ink(Math.max(1.5, w * 0.014), 0.6);
+      idx++;
+    }
+  }
+  // door
+  ctx.fillStyle = '#4a352a';
+  ctx.beginPath(); ctx.rect(x + w / 2 - w * 0.11, base - h * 0.24, w * 0.22, h * 0.24); ctx.fill(); ctx.stroke();
+}
+
+// loom: x = left, base = floor, s = height
+function folkLoom(x, base, s, t, active) {
+  const w = s * 0.92, pw = s * 0.085;
+  ink(Math.max(1.5, s * 0.03), 0.6);
+  ctx.fillStyle = '#6b4f2e';
+  // posts
+  ctx.beginPath(); ctx.rect(x, base - s, pw, s); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.rect(x + w - pw, base - s, pw, s); ctx.fill(); ctx.stroke();
+  // beams
+  ctx.beginPath(); ctx.rect(x - pw * 0.4, base - s, w + pw * 0.8, s * 0.1); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.rect(x, base - s * 0.36, w, s * 0.08); ctx.fill(); ctx.stroke();
+  // warp threads
+  ctx.strokeStyle = '#efe6cf'; ctx.lineWidth = Math.max(1, s * 0.018);
+  for (let i = 0; i < 8; i++) {
+    const wx = x + pw + (w - pw * 2) * (i / 7);
+    ctx.beginPath();
+    ctx.moveTo(wx, base - s * 0.9);
+    ctx.lineTo(wx + s * 0.02, base - s * 0.4);
+    ctx.stroke();
+  }
+  // shuttle
+  if (active) {
+    const span = w - pw * 2 - s * 0.16;
+    const sx = x + pw + tri(t * 1.4 + x * 0.013) * span;
+    ctx.fillStyle = '#93392c';
+    ink(Math.max(1, s * 0.02), 0.6);
+    ctx.beginPath();
+    ctx.ellipse(sx + s * 0.08, base - s * 0.55, s * 0.09, s * 0.04, 0, 0, TAU);
+    ctx.fill(); ctx.stroke();
+  }
+  // woven cloth roll
+  ctx.fillStyle = '#3d5a8f';
+  ink(Math.max(1, s * 0.02), 0.6);
+  ctx.beginPath(); ctx.rect(x + pw, base - s * 0.28, w - pw * 2, s * 0.13); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#4d6ca3';
+  ctx.beginPath(); ctx.arc(x + pw, base - s * 0.215, s * 0.065, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + w - pw, base - s * 0.215, s * 0.065, 0, TAU); ctx.fill(); ctx.stroke();
+}
+
+function millWheel(x, y, r, ang) {
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(ang);
+  ctx.strokeStyle = '#4a352a'; ctx.lineWidth = r * 0.16; ctx.lineCap = 'butt';
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
+  ctx.lineWidth = r * 0.07;
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.6, 0, TAU); ctx.stroke();
+  for (let i = 0; i < 8; i++) {
+    ctx.save(); ctx.rotate(i / 8 * TAU);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -r); ctx.stroke();
+    ctx.fillStyle = '#6b4f2e';
+    ctx.fillRect(-r * 0.16, -r - r * 0.05, r * 0.32, r * 0.14);
+    ctx.restore();
+  }
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.12, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+
+function cartHorse(x, y, s, t, dir, cargoCol) {
+  ctx.save();
+  if (dir < 0) { ctx.translate(x, y); ctx.scale(-1, 1); ctx.translate(-x, -y); }
+  ink(Math.max(1.5, s * 0.035), 0.6);
+  // horse
+  ctx.fillStyle = '#a4713d';
+  ctx.beginPath(); ctx.ellipse(x - s * 0.72, y - s * 0.33, s * 0.3, s * 0.17, 0, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#7a512b'; ctx.lineWidth = s * 0.05;
+  const gait = Math.sin(t * 7) * s * 0.05;
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.88, y - s * 0.2); ctx.lineTo(x - s * 0.9 + gait, y);
+  ctx.moveTo(x - s * 0.58, y - s * 0.2); ctx.lineTo(x - s * 0.56 - gait, y);
+  ctx.stroke();
+  ctx.fillStyle = '#a4713d';
+  ink(Math.max(1.5, s * 0.035), 0.6);
+  ctx.beginPath(); ctx.ellipse(x - s * 1.02, y - s * 0.52, s * 0.13, s * 0.1, -0.4, 0, TAU); ctx.fill(); ctx.stroke();
+  // shaft
+  ctx.strokeStyle = '#5f4630'; ctx.lineWidth = s * 0.035;
+  ctx.beginPath(); ctx.moveTo(x - s * 0.5, y - s * 0.3); ctx.lineTo(x - s * 0.1, y - s * 0.3); ctx.stroke();
+  // cart box
+  ctx.fillStyle = '#6b4f2e';
+  ink(Math.max(1.5, s * 0.035), 0.6);
+  ctx.beginPath(); ctx.rect(x - s * 0.1, y - s * 0.52, s * 0.85, s * 0.3); ctx.fill(); ctx.stroke();
+  // cargo mound
+  ctx.fillStyle = cargoCol;
+  ctx.beginPath();
+  ctx.arc(x + s * 0.13, y - s * 0.55, s * 0.13, 0, TAU);
+  ctx.arc(x + s * 0.35, y - s * 0.6, s * 0.15, 0, TAU);
+  ctx.arc(x + s * 0.56, y - s * 0.55, s * 0.13, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  // wheels
+  for (const wx of [x + s * 0.08, x + s * 0.58]) {
+    ctx.fillStyle = '#4a352a';
+    ctx.beginPath(); ctx.arc(wx, y - s * 0.13, s * 0.16, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#cbb282'; ctx.lineWidth = s * 0.025;
+    for (let a = 0; a < 4; a++) {
+      const an = a * Math.PI / 4 + t * 3;
+      ctx.beginPath();
+      ctx.moveTo(wx - Math.cos(an) * s * 0.12, y - s * 0.13 - Math.sin(an) * s * 0.12);
+      ctx.lineTo(wx + Math.cos(an) * s * 0.12, y - s * 0.13 + Math.sin(an) * s * 0.12);
+      ctx.stroke();
+    }
+    ink(Math.max(1.5, s * 0.035), 0.6);
+  }
+  ctx.restore();
+}
+
+function smoke(x, y, t, seed, s) {
+  s = s || 1;
+  for (let i = 0; i < 3; i++) {
+    const p = (t * 0.22 + i * 0.33 + hash(seed, i)) % 1;
+    const px = x + p * 22 * s + Math.sin(p * 9 + seed) * 6 * s;
+    const py = y - p * 60 * s;
+    ctx.fillStyle = `rgba(210,203,190,${(1 - p) * 0.4})`;
+    ctx.beginPath(); ctx.arc(px, py, (4 + p * 10) * s, 0, TAU); ctx.fill();
+  }
+}
+
+function baleStack(x, base, cols, rows, bw, bh, col, col2) {
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const bx = x + c * (bw + 3) + (r % 2) * bw * 0.3;
+      const by = base - (r + 1) * (bh + 2);
+      ctx.fillStyle = col;
+      ink(Math.max(1, bw * 0.05), 0.55);
+      ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = col2; ctx.lineWidth = Math.max(1, bw * 0.06);
+      ctx.beginPath();
+      ctx.moveTo(bx + bw * 0.33, by); ctx.lineTo(bx + bw * 0.33, by + bh);
+      ctx.moveTo(bx + bw * 0.66, by); ctx.lineTo(bx + bw * 0.66, by + bh);
+      ctx.stroke();
+    }
+  }
+}
+
+const WORKER_COLS = ['#7d3b2f', '#3f5d70', '#6b4f2e', '#556b42', '#8a5a70'];
+const HOUSE_BODIES = ['#ecdfbc', '#c0392b', '#f4efe2', '#d9c69a', '#a84a38', '#e8d9b0'];
+const HOUSE_ROOFS = ['#2f2b27', '#4a382c', '#3a3f4a', '#553d2e'];
+
+// ============================================================
+// VIEW 1 — FOLK CANVAS (painterly side view)
+// ============================================================
+function renderView1(t, cam) {
+  const WW = VIEWS[0].worldW;
+  ctx.save();
+  ctx.translate(-cam, 0);
+
+  // sky
+  ctx.fillStyle = '#cde3d8';
+  ctx.fillRect(-200, 0, WW + 400, WORLD_H);
+  ctx.fillStyle = '#dcebd9';
+  ctx.fillRect(-200, 210, WW + 400, 130);
+  // sun
+  ctx.fillStyle = 'rgba(244,238,218,0.85)';
+  ctx.beginPath(); ctx.arc(360, 90, 34, 0, TAU); ctx.fill();
+  // clouds + birds
+  for (let i = 0; i < 6; i++) {
+    const cx = ((i * 430 + t * 10) % (WW + 340)) - 170;
+    cloud(cx, 58 + hash(i, 1) * 95, 75 + hash(i, 2) * 55);
+  }
+  bird(((t * 26) % (WW + 200)) - 100, 130, 13);
+  bird(((t * 22 + 700) % (WW + 200)) - 100, 90, 10);
+
+  // hills
+  mound(300, 345, 520, 130, '#97ad60');
+  mound(1050, 345, 620, 165, '#8aa858');
+  mound(1850, 345, 560, 140, '#97ad60');
+  mound(2400, 345, 480, 120, '#8aa858');
+  folkTree(160, 300, 85, 0.2);
+  folkTree(560, 275, 105, 0.55);
+  folkTree(940, 255, 95, 0.85);
+  folkTree(1210, 280, 80, 0.35);
+  folkTree(2080, 270, 100, 0.65);
+  folkTree(2320, 300, 82, 0.15);
+
+  // meadow
+  ctx.fillStyle = '#a9ba72';
+  ctx.fillRect(-200, 335, WW + 400, WORLD_H - 335);
+
+  // street band (rough edges)
+  ctx.fillStyle = '#cfb98a';
+  ctx.beginPath();
+  ctx.moveTo(-200, 496);
+  for (let x = -200; x <= WW + 200; x += 60) ctx.lineTo(x, 496 + Math.sin(x * 0.01) * 5);
+  ctx.lineTo(WW + 200, 566);
+  for (let x = WW + 200; x >= -200; x -= 60) ctx.lineTo(x, 566 + Math.sin(x * 0.013 + 2) * 5);
+  ctx.closePath(); ctx.fill();
+  ink(2, 0.25);
+  ctx.stroke();
+
+  // grass verge below street
+  ctx.fillStyle = '#97ad60';
+  ctx.fillRect(-200, 588, WW + 400, 42);
+
+  // millpond band
+  ctx.fillStyle = '#3c5f68';
+  ctx.beginPath();
+  ctx.moveTo(-200, 615);
+  for (let x = -200; x <= WW + 200; x += 80) ctx.lineTo(x, 615 + Math.sin(x * 0.008 + 1) * 7);
+  ctx.lineTo(WW + 200, 712);
+  for (let x = WW + 200; x >= -200; x -= 80) ctx.lineTo(x, 712 + Math.sin(x * 0.01) * 6);
+  ctx.closePath(); ctx.fill();
+  // ripples
+  ctx.strokeStyle = '#557d84'; ctx.lineWidth = 2.5;
+  for (let i = 0; i < 26; i++) {
+    const rx = hash(i, 4) * WW;
+    const ry = 632 + hash(i, 5) * 62;
+    ctx.beginPath();
+    ctx.moveTo(rx + Math.sin(t + i) * 4, ry);
+    ctx.lineTo(rx + 22 + hash(i, 6) * 18 + Math.sin(t + i) * 4, ry);
+    ctx.stroke();
+  }
+
+  // front grass
+  ctx.fillStyle = '#7a944d';
+  ctx.fillRect(-200, 700, WW + 400, 60);
+
+  // fences + flowers on meadow line
+  fenceRun(60, 640, 470, 1);
+  fenceRun(1100, 1290, 470, 1);
+  flowerPatch(80, 620, 468, 16, 1);
+  flowerPatch(1110, 1280, 468, 8, 1);
+  flowerPatch(1990, 2340, 468, 12, 1);
+
+  // town houses
+  const bodies = HOUSE_BODIES, roofs = HOUSE_ROOFS;
+  for (let i = 0; i < 5; i++) {
+    const hx = 90 + i * 112;
+    folkHouse(hx, 470, 96, 105, bodies[i % bodies.length], roofs[i % roofs.length], { windows: 2, lit: i % 2 });
+    smoke(hx + 70, 470 - 155, t, i, 0.9);
+  }
+  cow(700, 468, 70);
+
+  // competitor shops
+  const lit1 = 2 + Math.floor(tri(t * 0.15) * 4);
+  const lit2 = 1 + Math.floor(tri(t * 0.11 + 0.5) * 4);
+  shopFacade(770, 470, 175, 215, '#ecdfbc', 'SMITH & CO', lit1);
+  shopFacade(1000, 470, 175, 215, '#d9c69a', 'JONES MILL', lit2);
+
+  // ---- YOUR FACTORY (big red barn, cutaway) ----
+  const fx = 1330, fw = 620, fbase = 470, fh = 285;
+  ink(3, 0.6);
+  ctx.fillStyle = '#93392c';
+  ctx.beginPath(); ctx.rect(fx, fbase - fh, fw, fh); ctx.fill(); ctx.stroke();
+  // big dark roof
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath();
+  ctx.moveTo(fx - 18, fbase - fh);
+  ctx.lineTo(fx + fw * 0.17, fbase - fh - 74);
+  ctx.lineTo(fx + fw * 0.83, fbase - fh - 74);
+  ctx.lineTo(fx + fw + 18, fbase - fh);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // cupola + weathervane bird
+  ctx.fillStyle = '#ecdfbc';
+  ctx.beginPath(); ctx.rect(fx + fw / 2 - 22, fbase - fh - 116, 44, 46); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath();
+  ctx.moveTo(fx + fw / 2 - 30, fbase - fh - 116);
+  ctx.lineTo(fx + fw / 2, fbase - fh - 148);
+  ctx.lineTo(fx + fw / 2 + 30, fbase - fh - 116);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  bird(fx + fw / 2, fbase - fh - 154, 9);
+  // roof sign
+  ctx.fillStyle = '#f4eeda';
+  ctx.font = 'italic 26px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('RIVER & THREAD', fx + fw / 2, fbase - fh - 26);
+  // cutaway interior
+  const ix = fx + 20, iw = fw - 40, itop = fbase - fh + 26;
+  ctx.fillStyle = '#efe3c4';
+  ctx.beginPath(); ctx.rect(ix, itop, iw, fbase - itop); ctx.fill();
+  ink(2, 0.4); ctx.stroke();
+  // floor boards
+  ctx.strokeStyle = 'rgba(120,90,60,0.35)'; ctx.lineWidth = 2;
+  for (let x = ix; x < ix + iw; x += 38) {
+    ctx.beginPath(); ctx.moveTo(x, fbase - 10); ctx.lineTo(x, fbase); ctx.stroke();
+  }
+  ctx.fillStyle = 'rgba(160,128,86,0.4)';
+  ctx.fillRect(ix, fbase - 10, iw, 10);
+  // cotton bales (storehouse)
+  baleStack(ix + 14, fbase - 4, 2, 3, 42, 34, '#f2ecd9', 'rgba(150,130,90,0.5)');
+  ctx.fillStyle = '#8a6f4a';
+  ctx.font = 'italic 15px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('cotton', ix + 60, itop + 22);
+  // looms with workers
+  const loomXs = [ix + 132, ix + 288, ix + 444];
+  for (let i = 0; i < loomXs.length; i++) {
+    const active = i < 2;
+    if (active) folkWorker(loomXs[i] + 70, fbase - 2, 88, WORKER_COLS[i], t * 6, { still: true });
+    folkLoom(loomXs[i], fbase - 2, 150, t + i * 0.7, active);
+    if (!active) {
+      ctx.fillStyle = 'rgba(147,57,44,0.75)';
+      ctx.font = 'italic 15px Georgia'; ctx.textAlign = 'center';
+      ctx.fillText('empty', loomXs[i] + 69, fbase - 160);
+    }
+  }
+  // cloth bales (warehouse)
+  baleStack(ix + iw - 96, fbase - 4, 2, 2, 40, 32, '#3d5a8f', 'rgba(210,220,240,0.5)');
+  ctx.fillStyle = '#8a6f4a';
+  ctx.font = 'italic 15px Georgia';
+  ctx.fillText('cloth', ix + iw - 55, itop + 22);
+  // carrier walking loom → warehouse
+  const carryX = lerp(loomXs[1] + 90, ix + iw - 110, tri(t * 0.35));
+  folkWorker(carryX, fbase - 2, 84, WORKER_COLS[3], t * 7, { carry: true });
+  smoke(fx + fw * 0.7, fbase - fh - 70, t, 9, 1.4);
+
+  // mill wheel dipping into pond
+  ctx.strokeStyle = '#4a352a'; ctx.lineWidth = 7;
+  ctx.beginPath(); ctx.moveTo(fx + fw - 4, 560); ctx.lineTo(fx + fw + 74, 560); ctx.stroke();
+  millWheel(fx + fw + 74, 612, 62, t * 1.2);
+
+  // cart on street
+  const cartT = tri(t * 0.09);
+  cartHorse(lerp(240, 1300, cartT), 560, 62, t, cartT < 0.999 ? 1 : -1, '#f2ecd9');
+
+  // workers on street
+  for (let i = 0; i < 5; i++) {
+    const span = 900, x0 = 180 + i * 160;
+    const p = tri(t * 0.045 + hash(i, 11) * 2);
+    folkWorker(x0 + p * span * (0.4 + hash(i, 12) * 0.6), 552, 58, WORKER_COLS[i % WORKER_COLS.length], t * 6 + i, {});
+  }
+
+  // ducks
+  const duckCols = ['#f2efe6', '#d9c69a', '#e3bf45', '#f2efe6', '#7d3b2f', '#f2efe6'];
+  for (let i = 0; i < 6; i++) {
+    duck(430 + i * 150 + Math.sin(t * 0.4 + i) * 22, 655 + hash(i, 3) * 28, 30, duckCols[i], t);
+  }
+
+  // foreground fence corners + sunflowers
+  fenceRun(-40, 240, 758, 1.5);
+  fenceRun(WW - 260, WW + 40, 758, 1.5);
+  flowerPatch(30, 220, 752, 6, 1.8);
+  flowerPatch(WW - 230, WW - 40, 752, 6, 1.8);
+
+  ctx.restore();
+}
+
+// ============================================================
+// VIEW 2 — 2.5-D TOWNSHIP (tilted three-quarter)
+// ============================================================
+function house25(x, base, w, h, body, roof, opts) {
+  opts = opts || {};
+  const dx = w * 0.3, dy = -h * 0.26, e = w * 0.08, rh = h * 0.5;
+  ink(Math.max(1.5, w * 0.02), 0.6);
+  // side wall (right, receding back)
+  ctx.fillStyle = shade(body, -28);
+  ctx.beginPath();
+  ctx.moveTo(x + w, base); ctx.lineTo(x + w, base - h);
+  ctx.lineTo(x + w + dx, base - h + dy); ctx.lineTo(x + w + dx, base + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // roof planes
+  const rfx = x + w / 2, rfy = base - h - rh;
+  ctx.fillStyle = shade(roof, 22);
+  ctx.beginPath();
+  ctx.moveTo(x + w + e, base - h); ctx.lineTo(rfx, rfy);
+  ctx.lineTo(rfx + dx, rfy + dy); ctx.lineTo(x + w + e + dx, base - h + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = roof;
+  ctx.beginPath();
+  ctx.moveTo(x - e, base - h); ctx.lineTo(rfx, rfy);
+  ctx.lineTo(rfx + dx, rfy + dy); ctx.lineTo(x - e + dx, base - h + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // front face
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.rect(x, base - h, w, h); ctx.fill(); ctx.stroke();
+  // front gable
+  ctx.fillStyle = shade(body, 10);
+  ctx.beginPath();
+  ctx.moveTo(x - e, base - h); ctx.lineTo(rfx, rfy); ctx.lineTo(x + w + e, base - h);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // door + windows
+  ctx.fillStyle = '#4a352a';
+  ctx.beginPath(); ctx.rect(x + w * 0.4, base - h * 0.45, w * 0.2, h * 0.45); ctx.fill(); ctx.stroke();
+  const lit = opts.lit || 0;
+  for (let i = 0; i < 2; i++) {
+    const wx = x + w * (0.14 + i * 0.6), wy = base - h * 0.66;
+    ctx.fillStyle = i < lit ? '#f2cf6a' : '#3f4c55';
+    ctx.beginPath(); ctx.rect(wx, wy, w * 0.2, w * 0.18); ctx.fill(); ctx.stroke();
+  }
+}
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = (n >> 16) + amt, g = ((n >> 8) & 255) + amt, b = (n & 255) + amt;
+  r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
+  return `rgb(${r},${g},${b})`;
+}
+
+function renderView2(t, cam) {
+  const WW = VIEWS[1].worldW;
+  ctx.save();
+  ctx.translate(-cam, 0);
+
+  // sky + far hills
+  ctx.fillStyle = '#cde3d8';
+  ctx.fillRect(-200, 0, WW + 400, 260);
+  for (let i = 0; i < 4; i++) {
+    cloud(((i * 560 + t * 8) % (WW + 300)) - 150, 50 + hash(i, 1) * 60, 60 + hash(i, 2) * 40);
+  }
+  bird(((t * 24 + 300) % (WW + 200)) - 100, 100, 11);
+  mound(400, 245, 500, 90, '#8aa858');
+  mound(1200, 245, 600, 110, '#97ad60');
+  mound(1850, 245, 450, 85, '#8aa858');
+  folkTree(300, 225, 55, 0.3); folkTree(1000, 210, 62, 0.7); folkTree(1650, 225, 52, 0.5);
+
+  // receding field bands (perspective rows)
+  const bands = [
+    { y0: 240, y1: 292, c: '#8fa85c' },
+    { y0: 292, y1: 352, c: '#a9ba72' },
+    { y0: 352, y1: 428, c: '#97ad60' },
+    { y0: 428, y1: 518, c: '#a9ba72' },
+    { y0: 518, y1: 630, c: '#8fa85c' },
+    { y0: 630, y1: 760, c: '#7a944d' },
+  ];
+  for (const b of bands) {
+    ctx.fillStyle = b.c;
+    ctx.fillRect(-200, b.y0, WW + 400, b.y1 - b.y0);
+    ctx.strokeStyle = 'rgba(70,97,47,0.18)'; ctx.lineWidth = 2;
+    const nrows = Math.floor((b.y1 - b.y0) / 16);
+    for (let i = 1; i < nrows; i++) {
+      const yy = b.y0 + (b.y1 - b.y0) * (i / nrows);
+      ctx.beginPath(); ctx.moveTo(-200, yy); ctx.lineTo(WW + 200, yy); ctx.stroke();
+    }
+  }
+
+  // back lane + main street
+  ctx.fillStyle = '#cfb98a';
+  ctx.fillRect(-200, 344, WW + 400, 22);
+  ctx.fillStyle = '#cfb98a';
+  ctx.beginPath();
+  ctx.moveTo(-200, 518);
+  ctx.lineTo(WW + 200, 518);
+  ctx.lineTo(WW + 200, 588);
+  ctx.lineTo(-200, 588);
+  ctx.closePath(); ctx.fill();
+  ink(2, 0.22); ctx.strokeRect(-200, 518, WW + 400, 70);
+
+  // ---- BACK ROW: growing edge of town (smallest) ----
+  for (let i = 0; i < 5; i++) {
+    house25(180 + i * 200, 340, 62, 54, HOUSE_BODIES[i % 6], HOUSE_ROOFS[i % 4], { lit: i % 2 });
+  }
+  // future plots (dashed) — the town will grow into these
+  ctx.setLineDash([7, 6]);
+  ink(2, 0.4);
+  for (const px of [1180, 1400, 1620]) {
+    ctx.strokeRect(px, 286, 62, 54);
+  }
+  ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(48,35,24,0.5)';
+  ctx.font = 'italic 13px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('room to grow…', 1430, 278);
+
+  // ---- MID ROW ----
+  for (let i = 0; i < 6; i++) {
+    house25(120 + i * 230, 428, 88, 76, HOUSE_BODIES[(i + 2) % 6], HOUSE_ROOFS[(i + 1) % 4], { lit: (i + 1) % 3 });
+    smoke(160 + i * 230, 428 - 118, t, i + 20, 0.7);
+  }
+  // half-built frame house (evolving town)
+  const hbx = 1540, hbb = 428;
+  ink(2.5, 0.65);
+  ctx.strokeRect(hbx, hbb - 76, 88, 76);
+  ctx.beginPath();
+  ctx.moveTo(hbx - 6, hbb - 76); ctx.lineTo(hbx + 44, hbb - 114); ctx.lineTo(hbx + 94, hbb - 76);
+  ctx.stroke();
+  folkWorker(hbx + 100, hbb, 44, WORKER_COLS[2], t * 5, {});
+
+  // back lane walkers (smaller, behind Main Street row)
+  for (let i = 0; i < 3; i++) {
+    const p = tri(t * 0.04 + hash(i, 15) * 2);
+    folkWorker(300 + p * 900 + i * 120, 362, 32, WORKER_COLS[(i + 2) % 5], t * 5 + i, {});
+  }
+
+  // ---- FRONT ROW: Main Street ----
+  const lit1 = 2 + Math.floor(tri(t * 0.13) * 4);
+  house25(110, 518, 120, 100, '#ecdfbc', '#3a3f4a', { lit: 2 });
+  shopFacade(320, 518, 150, 175, '#ecdfbc', 'SMITH & CO', lit1);
+  shopFacade(560, 518, 150, 175, '#d9c69a', 'JONES MILL', 3);
+  house25(820, 518, 120, 100, '#c0392b', '#2f2b27', { lit: 1 });
+
+  // factory 2.5d with cutaway
+  const fx = 1120, fbase = 518, fw = 470, fh = 230;
+  // side + top via house25 shell (no windows), then cutaway drawn over front
+  house25(fx, fbase, fw, fh, '#93392c', '#2f2b27', {});
+  const ix = fx + 16, iw = fw - 32, itop = fbase - fh + 18;
+  ctx.fillStyle = '#efe3c4';
+  ctx.beginPath(); ctx.rect(ix, itop, iw, fbase - itop); ctx.fill();
+  ink(2, 0.4); ctx.stroke();
+  baleStack(ix + 10, fbase - 4, 2, 2, 32, 26, '#f2ecd9', 'rgba(150,130,90,0.5)');
+  const lxs = [ix + 96, ix + 212, ix + 328];
+  for (let i = 0; i < 3; i++) {
+    if (i < 2) folkWorker(lxs[i] + 52, fbase - 2, 66, WORKER_COLS[i], t * 6, { still: true });
+    folkLoom(lxs[i], fbase - 2, 112, t + i, i < 2);
+  }
+  ctx.fillStyle = '#f4eeda';
+  ctx.font = 'italic 19px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('RIVER & THREAD', fx + fw / 2, itop - 26);
+  smoke(fx + fw * 0.8, fbase - fh - 105, t, 31, 1.1);
+
+  // mill wheel + race at right of factory, dipping to river below
+  ctx.strokeStyle = '#4a352a'; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(fx + fw + 58, 596); ctx.lineTo(fx + fw - 4, 596); ctx.stroke();
+  millWheel(fx + fw + 58, 652, 52, t * 1.2);
+
+  // river across foreground
+  ctx.fillStyle = '#3c5f68';
+  ctx.beginPath();
+  ctx.moveTo(-200, 648);
+  for (let x = -200; x <= WW + 200; x += 90) ctx.lineTo(x, 648 + Math.sin(x * 0.006 + 2) * 8);
+  ctx.lineTo(WW + 200, 736);
+  for (let x = WW + 200; x >= -200; x -= 90) ctx.lineTo(x, 736 + Math.sin(x * 0.008) * 7);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#557d84'; ctx.lineWidth = 2.5;
+  for (let i = 0; i < 20; i++) {
+    const rx = hash(i, 8) * WW, ry = 665 + hash(i, 9) * 52;
+    ctx.beginPath();
+    ctx.moveTo(rx + Math.sin(t + i) * 5, ry); ctx.lineTo(rx + 26 + Math.sin(t + i) * 5, ry);
+    ctx.stroke();
+  }
+  // barge
+  const bgx = ((t * 34) % (WW + 400)) - 200;
+  ink(2.5, 0.6);
+  ctx.fillStyle = '#5d4a38';
+  ctx.beginPath();
+  ctx.moveTo(bgx - 55, 690); ctx.lineTo(bgx - 42, 712); ctx.lineTo(bgx + 58, 712); ctx.lineTo(bgx + 74, 690);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#f2ecd9';
+  ctx.beginPath();
+  ctx.arc(bgx - 12, 682, 13, 0, TAU); ctx.arc(bgx + 14, 680, 15, 0, TAU); ctx.arc(bgx + 38, 683, 12, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  folkWorker(bgx - 34, 692, 40, WORKER_COLS[1], 0, { still: true });
+
+  // street life
+  const cartT2 = tri(t * 0.08);
+  cartHorse(lerp(200, 1100, cartT2), 580, 54, t, 1, '#f2ecd9');
+  for (let i = 0; i < 5; i++) {
+    const p = tri(t * 0.05 + hash(i, 14) * 2);
+    folkWorker(150 + p * 850 + i * 30, 574, 60, WORKER_COLS[i % 5], t * 6 + i, {});
+  }
+
+  ctx.restore();
+}
+
+// ============================================================
+// VIEW 3 — QUILT MAP (naive bird's-eye sampler)
+// ============================================================
+const PATCHES = [
+  { x: 0, y: 0, w: 430, h: 300, c: '#8fa85c', tex: 'rows' },
+  { x: 430, y: 0, w: 390, h: 260, c: '#a9ba72', tex: 'dots' },
+  { x: 820, y: 0, w: 450, h: 240, c: '#7a944d', tex: 'rows' },
+  { x: 1270, y: 0, w: 430, h: 300, c: '#97ad60', tex: 'forest' },
+  { x: 0, y: 300, w: 370, h: 250, c: '#a9ba72', tex: 'plain' },
+  { x: 370, y: 260, w: 420, h: 260, c: '#b5c47b', tex: 'commons' },
+  { x: 790, y: 240, w: 480, h: 280, c: '#8fa85c', tex: 'dots' },
+  { x: 1270, y: 300, w: 430, h: 250, c: '#6d8a44', tex: 'rows' },
+  { x: 0, y: 550, w: 400, h: 210, c: '#7a944d', tex: 'dots' },
+  { x: 400, y: 520, w: 440, h: 240, c: '#97ad60', tex: 'rows' },
+  { x: 840, y: 520, w: 430, h: 240, c: '#a9ba72', tex: 'plain' },
+  { x: 1270, y: 550, w: 430, h: 210, c: '#8fa85c', tex: 'dots' },
+];
+const ROAD = [[120, 130], [380, 250], [660, 350], [980, 425], [1190, 530], [1430, 650]];
+const RIVER = [[1520, 40], [1300, 230], [1090, 400], [880, 610], [560, 730]];
+
+function polyLen(pts) {
+  const segs = [];
+  let total = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    segs.push(d); total += d;
+  }
+  return { segs, total };
+}
+const ROAD_LEN = polyLen(ROAD);
+function pointOnPoly(pts, plen, p) {
+  let dist = p * plen.total;
+  for (let i = 0; i < plen.segs.length; i++) {
+    if (dist <= plen.segs[i]) {
+      const u = dist / plen.segs[i];
+      return {
+        x: lerp(pts[i][0], pts[i + 1][0], u),
+        y: lerp(pts[i][1], pts[i + 1][1], u),
+      };
+    }
+    dist -= plen.segs[i];
+  }
+  return { x: pts[pts.length - 1][0], y: pts[pts.length - 1][1] };
+}
+
+function renderView3(t, cam) {
+  ctx.save();
+  ctx.translate(-cam, 0);
+
+  // quilt patches
+  for (let pi = 0; pi < PATCHES.length; pi++) {
+    const p = PATCHES[pi];
+    ctx.save();
+    ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
+    ctx.rotate((hash(pi, 1) - 0.5) * 0.025);
+    ctx.translate(-(p.x + p.w / 2), -(p.y + p.h / 2));
+    ctx.fillStyle = p.c;
+    ctx.fillRect(p.x - 6, p.y - 6, p.w + 12, p.h + 12);
+    // stitched border
+    ctx.setLineDash([7, 6]);
+    ink(2.5, 0.35);
+    ctx.strokeRect(p.x + 6, p.y + 6, p.w - 12, p.h - 12);
+    ctx.setLineDash([]);
+    // texture
+    if (p.tex === 'rows') {
+      ctx.strokeStyle = 'rgba(70,97,47,0.25)'; ctx.lineWidth = 3;
+      for (let yy = p.y + 22; yy < p.y + p.h - 10; yy += 20) {
+        ctx.beginPath(); ctx.moveTo(p.x + 16, yy); ctx.lineTo(p.x + p.w - 16, yy); ctx.stroke();
+      }
+    } else if (p.tex === 'dots') {
+      ctx.fillStyle = 'rgba(70,97,47,0.3)';
+      for (let i = 0; i < 40; i++) {
+        ctx.beginPath();
+        ctx.arc(p.x + 18 + hash(i, pi) * (p.w - 36), p.y + 18 + hash(i + 40, pi) * (p.h - 36), 3.5, 0, TAU);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+    if (p.tex === 'forest') {
+      for (let i = 0; i < 8; i++) {
+        folkTree(p.x + 40 + hash(i, 60) * (p.w - 80), p.y + 70 + hash(i + 8, 60) * (p.h - 80), 55 + hash(i, 61) * 25, hash(i, 62));
+      }
+    }
+    if (p.tex === 'commons') {
+      for (let i = 0; i < 5; i++) {
+        sheep(p.x + 60 + hash(i, 70) * (p.w - 120) + Math.sin(t * 0.3 + i * 2) * 12, p.y + 70 + hash(i + 5, 70) * (p.h - 110), 34);
+      }
+    }
+  }
+
+  // river (under road bridge)
+  ctx.strokeStyle = '#3c5f68'; ctx.lineWidth = 46; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(RIVER[0][0], RIVER[0][1]);
+  for (let i = 1; i < RIVER.length; i++) ctx.lineTo(RIVER[i][0], RIVER[i][1]);
+  ctx.stroke();
+  ctx.strokeStyle = '#557d84'; ctx.lineWidth = 3;
+  for (let i = 0; i < 14; i++) {
+    const rp = pointOnPoly(RIVER, polyLen(RIVER), (i / 14 + t * 0.01) % 1);
+    ctx.beginPath(); ctx.moveTo(rp.x - 10, rp.y); ctx.lineTo(rp.x + 10, rp.y); ctx.stroke();
+  }
+
+  // road
+  ctx.strokeStyle = '#b39d6e'; ctx.lineWidth = 44;
+  ctx.beginPath();
+  ctx.moveTo(ROAD[0][0], ROAD[0][1]);
+  for (let i = 1; i < ROAD.length; i++) ctx.lineTo(ROAD[i][0], ROAD[i][1]);
+  ctx.stroke();
+  ctx.strokeStyle = '#cfb98a'; ctx.lineWidth = 36;
+  ctx.beginPath();
+  ctx.moveTo(ROAD[0][0], ROAD[0][1]);
+  for (let i = 1; i < ROAD.length; i++) ctx.lineTo(ROAD[i][0], ROAD[i][1]);
+  ctx.stroke();
+
+  // bridge where road crosses river
+  ctx.save();
+  ctx.translate(1055, 462); ctx.rotate(0.42);
+  ink(2.5, 0.6);
+  ctx.fillStyle = '#6b4f2e';
+  ctx.beginPath(); ctx.rect(-42, -15, 84, 30); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#4a352a'; ctx.lineWidth = 4;
+  for (let i = -30; i <= 30; i += 15) {
+    ctx.beginPath(); ctx.moveTo(i, -15); ctx.lineTo(i, 15); ctx.stroke();
+  }
+  ctx.restore();
+
+  // village cluster (face-on, naive map style)
+  for (let i = 0; i < 8; i++) {
+    const hx = 90 + (i % 3) * 95 + hash(i, 80) * 20;
+    const hy = 130 + Math.floor(i / 3) * 85 + hash(i, 81) * 16;
+    folkHouse(hx, hy, 62, 56, HOUSE_BODIES[i % 6], HOUSE_ROOFS[i % 4], { windows: 2, lit: i % 2 });
+  }
+  ctx.fillStyle = '#4a382c';
+  ctx.font = 'italic 22px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('The Town', 420, 90);
+
+  // competitor shops mid-map
+  shopFacade(560, 400, 120, 130, '#ecdfbc', 'SMITH & CO', 2 + Math.floor(tri(t * 0.14) * 4));
+  shopFacade(760, 330, 120, 130, '#d9c69a', 'JONES MILL', 3);
+
+  // factory (large, near river bend) + mill wheel
+  const fx = 950, fbase = 660, fw = 300, fh = 150;
+  ink(2.5, 0.6);
+  ctx.fillStyle = '#93392c';
+  ctx.beginPath(); ctx.rect(fx, fbase - fh, fw, fh); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath();
+  ctx.moveTo(fx - 10, fbase - fh);
+  ctx.lineTo(fx + fw * 0.2, fbase - fh - 42);
+  ctx.lineTo(fx + fw * 0.8, fbase - fh - 42);
+  ctx.lineTo(fx + fw + 10, fbase - fh);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // small cutaway
+  ctx.fillStyle = '#efe3c4';
+  ctx.beginPath(); ctx.rect(fx + 12, fbase - fh + 14, fw - 24, fh - 14); ctx.fill(); ctx.stroke();
+  const l3 = [fx + 34, fx + 118, fx + 202];
+  for (let i = 0; i < 3; i++) folkLoom(l3[i], fbase - 4, 74, t + i, i < 2);
+  ctx.fillStyle = '#f4eeda';
+  ctx.font = 'italic 17px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('RIVER & THREAD', fx + fw / 2, fbase - fh - 12);
+  millWheel(910, 592, 40, t * 1.2);
+  smoke(fx + fw * 0.75, fbase - fh - 40, t, 44, 1);
+
+  // warehouse beside factory
+  folkHouse(1300, 660, 92, 70, '#d9c69a', '#553d2e', { windows: 1, lit: 0, chimney: false });
+  ctx.fillStyle = '#4a382c';
+  ctx.font = 'italic 15px Georgia';
+  ctx.fillText('warehouse', 1346, 690);
+
+  // travellers along the road
+  for (let i = 0; i < 6; i++) {
+    const dir = i % 2 === 0;
+    let p = (t * 0.022 + i * 0.17) % 1;
+    if (!dir) p = 1 - p;
+    const pt = pointOnPoly(ROAD, ROAD_LEN, p);
+    folkWorker(pt.x, pt.y + 10, 34, WORKER_COLS[i % 5], t * 6 + i, {});
+  }
+  // cart along road
+  const cp = pointOnPoly(ROAD, ROAD_LEN, (t * 0.014) % 1);
+  cartHorse(cp.x, cp.y + 10, 34, t, 1, '#f2ecd9');
+  // barge on river
+  const bp = pointOnPoly(RIVER, polyLen(RIVER), (t * 0.012 + 0.3) % 1);
+  ink(2, 0.6);
+  ctx.fillStyle = '#5d4a38';
+  ctx.beginPath(); ctx.ellipse(bp.x, bp.y, 30, 12, 0.5, 0, TAU); ctx.fill(); ctx.stroke();
+
+  // trees stitched along a couple of seams
+  folkTree(420, 300, 48, 0.4); folkTree(1280, 330, 52, 0.7); folkTree(90, 590, 55, 0.2);
+  folkTree(1620, 500, 50, 0.9);
+
+  // compass rose, folk style
+  ctx.save();
+  ctx.translate(1600, 100);
+  ink(2.5, 0.55);
+  ctx.fillStyle = '#f4eeda';
+  ctx.beginPath(); ctx.arc(0, 0, 34, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#93392c';
+  ctx.beginPath();
+  ctx.moveTo(0, -28); ctx.lineTo(7, 0); ctx.lineTo(0, 28); ctx.lineTo(-7, 0);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3a2c1e';
+  ctx.font = 'bold 13px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('N', 0, -38);
+  ctx.restore();
+
+  ctx.restore();
+}
+
+// ============================================================
+// VIEW 4 — STREET LEVEL (huge sprites, parallax)
+// ============================================================
+function renderView4(t, cam) {
+  const WW = VIEWS[3].worldW;
+
+  // --- parallax back layer (hills move slower) ---
+  ctx.save();
+  ctx.translate(-cam * 0.35, 0);
+  ctx.fillStyle = '#cde3d8';
+  ctx.fillRect(-400, 0, WW + 2000, WORLD_H);
+  ctx.fillStyle = 'rgba(244,238,218,0.85)';
+  ctx.beginPath(); ctx.arc(500, 110, 46, 0, TAU); ctx.fill();
+  for (let i = 0; i < 7; i++) {
+    cloud(((i * 480 + t * 12) % (WW + 800)) - 300, 60 + hash(i, 1) * 120, 95 + hash(i, 2) * 70);
+  }
+  bird(((t * 30) % (WW + 400)) - 200, 170, 17);
+  bird(((t * 26 + 900) % (WW + 400)) - 200, 120, 13);
+  for (let i = 0; i < 8; i++) {
+    mound(i * 520, 480, 420, 150 + hash(i, 3) * 70, i % 2 ? '#8aa858' : '#97ad60');
+  }
+  for (let i = 0; i < 12; i++) {
+    folkTree(150 + i * 330, 420 - hash(i, 4) * 60, 90 + hash(i, 5) * 50, hash(i, 6));
+  }
+  ctx.restore();
+
+  // --- main layer ---
+  ctx.save();
+  ctx.translate(-cam, 0);
+
+  // meadow + street + verge
+  ctx.fillStyle = '#a9ba72';
+  ctx.fillRect(-200, 470, WW + 400, WORLD_H - 470);
+  ctx.fillStyle = '#cfb98a';
+  ctx.beginPath();
+  ctx.moveTo(-200, 618);
+  for (let x = -200; x <= WW + 200; x += 80) ctx.lineTo(x, 618 + Math.sin(x * 0.008) * 5);
+  ctx.lineTo(WW + 200, 706);
+  for (let x = WW + 200; x >= -200; x -= 80) ctx.lineTo(x, 706 + Math.sin(x * 0.01 + 1) * 5);
+  ctx.closePath(); ctx.fill();
+  ink(2.5, 0.25); ctx.stroke();
+  ctx.fillStyle = '#7a944d';
+  ctx.fillRect(-200, 700, WW + 400, 60);
+  // big grass blades + flowers up front
+  ctx.strokeStyle = '#5c7a3c'; ctx.lineWidth = 4;
+  for (let i = 0; i < Math.floor(WW / 30); i++) {
+    const gx = i * 30 + hash(i, 30) * 20;
+    ctx.beginPath();
+    ctx.moveTo(gx, 760);
+    ctx.quadraticCurveTo(gx + 6, 738, gx + 12 + Math.sin(t + i) * 3, 726);
+    ctx.stroke();
+  }
+  flowerPatch(100, 700, 748, 4, 2.4);
+  flowerPatch(1300, 1800, 748, 5, 2.4);
+
+  // town houses (huge)
+  for (let i = 0; i < 3; i++) {
+    const hx = 80 + i * 320;
+    folkHouse(hx, 618, 250, 270, HOUSE_BODIES[i % 6], HOUSE_ROOFS[i % 4], { windows: 4, lit: 2 });
+    smoke(hx + 182, 618 - 400, t, i + 50, 2.2);
+  }
+  fenceRun(60, 1050, 622, 2.2);
+
+  // competitor facades (towering)
+  shopFacade(1150, 618, 330, 470, '#ecdfbc', 'SMITH & CO', 2 + Math.floor(tri(t * 0.13) * 4));
+  shopFacade(1590, 618, 330, 470, '#d9c69a', 'JONES MILL', 4);
+
+  // ---- FACTORY (dollhouse scale) ----
+  const fx = 2060, fw = 1200, fbase = 618, fh = 520;
+  ink(4, 0.6);
+  ctx.fillStyle = '#93392c';
+  ctx.beginPath(); ctx.rect(fx, fbase - fh, fw, fh); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath();
+  ctx.moveTo(fx - 30, fbase - fh);
+  ctx.lineTo(fx + fw * 0.16, fbase - fh - 110);
+  ctx.lineTo(fx + fw * 0.84, fbase - fh - 110);
+  ctx.lineTo(fx + fw + 30, fbase - fh);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#f4eeda';
+  ctx.font = 'italic 44px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('RIVER & THREAD', fx + fw / 2, fbase - fh - 36);
+  smoke(fx + fw * 0.72, fbase - fh - 100, t, 60, 2.6);
+  // interior
+  const ix = fx + 34, iw = fw - 68, itop = fbase - fh + 40;
+  ctx.fillStyle = '#efe3c4';
+  ctx.beginPath(); ctx.rect(ix, itop, iw, fbase - itop); ctx.fill();
+  ink(3, 0.4); ctx.stroke();
+  ctx.fillStyle = 'rgba(160,128,86,0.4)';
+  ctx.fillRect(ix, fbase - 18, iw, 18);
+  ctx.strokeStyle = 'rgba(120,90,60,0.35)'; ctx.lineWidth = 3;
+  for (let x = ix; x < ix + iw; x += 60) {
+    ctx.beginPath(); ctx.moveTo(x, fbase - 18); ctx.lineTo(x, fbase); ctx.stroke();
+  }
+  // roof beams
+  ctx.strokeStyle = '#6b4f2e'; ctx.lineWidth = 9;
+  for (let x = ix + 120; x < ix + iw; x += 240) {
+    ctx.beginPath(); ctx.moveTo(x, itop); ctx.lineTo(x, itop + 60); ctx.stroke();
+  }
+  // storehouse: big cotton bales
+  baleStack(ix + 22, fbase - 8, 2, 3, 84, 66, '#f2ecd9', 'rgba(150,130,90,0.5)');
+  ctx.fillStyle = '#8a6f4a';
+  ctx.font = 'italic 28px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('storehouse', ix + 110, itop + 42);
+  // looms — enormous, every detail visible
+  const L4 = [ix + 250, ix + 560, ix + 870];
+  for (let i = 0; i < 3; i++) {
+    if (i < 2) folkWorker(L4[i] + 125, fbase - 4, 155, WORKER_COLS[i], t * 6, { still: true });
+    folkLoom(L4[i], fbase - 4, 270, t + i * 0.6, i < 2);
+    if (i >= 2) {
+      ctx.fillStyle = 'rgba(147,57,44,0.75)';
+      ctx.font = 'italic 26px Georgia'; ctx.textAlign = 'center';
+      ctx.fillText('empty seat', L4[i] + 124, fbase - 290);
+    }
+  }
+  // warehouse: cloth
+  baleStack(ix + iw - 100, fbase - 8, 1, 4, 82, 60, '#3d5a8f', 'rgba(210,220,240,0.5)');
+  ctx.fillStyle = '#8a6f4a';
+  ctx.font = 'italic 28px Georgia';
+  ctx.fillText('warehouse', ix + iw - 60, itop + 42);
+  // carrier
+  const carX = lerp(L4[1] + 150, ix + iw - 130, tri(t * 0.3));
+  folkWorker(carX, fbase - 4, 150, WORKER_COLS[3], t * 7, { carry: true });
+
+  // mill wheel — enormous
+  ctx.strokeStyle = '#4a352a'; ctx.lineWidth = 12;
+  ctx.beginPath(); ctx.moveTo(fx + fw - 6, 600); ctx.lineTo(fx + fw + 130, 600); ctx.stroke();
+  millWheel(fx + fw + 130, 680, 105, t * 1.2);
+  // water under wheel
+  ctx.fillStyle = '#3c5f68';
+  ctx.beginPath(); ctx.ellipse(fx + fw + 130, 758, 210, 34, 0, Math.PI, 0, true); ctx.fill();
+
+  // street life: huge sprites
+  const cart4 = tri(t * 0.07);
+  cartHorse(lerp(300, 2000, cart4), 692, 110, t, 1, '#f2ecd9');
+  for (let i = 0; i < 4; i++) {
+    const p = tri(t * 0.04 + hash(i, 21) * 2);
+    folkWorker(200 + p * 1500 + i * 90, 682, 120, WORKER_COLS[i % 5], t * 6 + i, {});
+  }
+  // one worker pausing to decide, thought bubble
+  const dx4 = 1490;
+  folkWorker(dx4, 682, 120, WORKER_COLS[4], 0, { still: true });
+  ctx.fillStyle = 'rgba(244,238,218,0.95)';
+  ink(2.5, 0.5);
+  ctx.beginPath(); ctx.arc(dx4 + 62, 682 - 150, 30, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(dx4 + 38, 682 - 118, 9, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3a2c1e';
+  ctx.font = 'bold 30px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('?', dx4 + 62, 682 - 139);
+
+  ctx.restore();
+}
+
+// ============================================================
+// MAIN LOOP
+// ============================================================
+const renders = [renderView1, renderView2, renderView3, renderView4];
+let last = 0, T = 0;
+function loop(ts) {
+  const dt = Math.min((ts - last) / 1000, 0.05);
+  last = ts;
+  T += dt;
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  ctx.scale(SCALE, SCALE);
+  renders[cur](T, VIEWS[cur].cam);
+  ctx.restore();
+  // canvas grain in screen space
+  if (!grain) grain = ctx.createPattern(tex, 'repeat');
+  ctx.fillStyle = grain;
+  ctx.fillRect(0, 0, W, H);
+  requestAnimationFrame(loop);
+}
+resize();
+requestAnimationFrame(ts => { last = ts; loop(ts); });
+</script>
+</body>
+</html>
