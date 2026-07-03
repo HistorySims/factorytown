@@ -53,6 +53,28 @@ button.action-btn.upgrade:hover { background: #67804f; }
 #mobile-hud .hud-item { text-align: center; color: #4a3826; }
 #mobile-hud .hud-val { color: #93392c; font-weight: bold; }
 
+/* --- MARKET BAR: the three price tools --- */
+#market-bar { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 15; align-items: stretch; flex-wrap: wrap; justify-content: center; max-width: 100%; padding: 0 6px; }
+.mkt-group { background: rgba(244,238,218,0.95); border: 2px solid #8a6f4a; border-radius: 12px; padding: 6px 12px; text-align: center; font-family: Georgia, serif; color: #3a2c1e; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.mkt-label { font-size: 12px; font-style: italic; color: #7a5c38; }
+.mkt-row { display: flex; align-items: center; gap: 8px; justify-content: center; margin: 3px 0 2px; }
+.mkt-btn { width: 44px; height: 44px; font-size: 26px; line-height: 1; background: #93392c; color: #f4eeda; border: 2px solid #6e2a20; border-radius: 10px; cursor: pointer; box-shadow: 0 3px #6e2a20; touch-action: manipulation; font-family: Georgia, serif; user-select: none; }
+.mkt-btn:active { transform: translateY(3px); box-shadow: 0 0 #6e2a20; }
+.mkt-val { font-size: 24px; font-weight: bold; min-width: 54px; color: #93392c; }
+.mkt-hint { font-size: 11px; color: #556b42; min-height: 14px; }
+.mkt-hint.warn { color: #a83828; }
+#margin-chip { align-self: center; background: rgba(244,238,218,0.95); border: 2px solid #8a6f4a; border-radius: 12px; padding: 8px 12px; font-family: Georgia, serif; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+#margin-chip .m-val { font-weight: bold; font-size: 17px; }
+@media (max-width: 640px) {
+  .mkt-btn { width: 38px; height: 38px; font-size: 22px; }
+  .mkt-val { font-size: 19px; min-width: 42px; }
+  .mkt-label { font-size: 10px; }
+  .mkt-hint { font-size: 9px; }
+  .mkt-group { padding: 4px 7px; }
+  #margin-chip { display: none; }
+  #market-bar { gap: 6px; bottom: 6px; }
+}
+
 @media (max-width: 800px) {
   #panel { position: fixed; top: 0; right: 0; bottom: 0; width: 280px; min-width: 280px; border-left: 3px solid #8a6f4a; margin-right: 0 !important; }
   #panel.collapsed { transform: translateX(100%) !important; margin-right: 0 !important; }
@@ -120,19 +142,6 @@ button.action-btn.upgrade:hover { background: #67804f; }
     </div>
   </div>
   <div class="section">
-    <h2 onclick="toggleSection(this)">Controls</h2>
-    <div class="section-body">
-      <div class="slider-row">
-        <label><span>Wages</span><span id="wage-val">5</span></label>
-        <input type="range" id="wage-slider" min="1" max="30" value="5" oninput="setWage(this.value)">
-      </div>
-      <div class="slider-row">
-        <label><span>Cloth Price</span><span id="price-val">12</span></label>
-        <input type="range" id="price-slider" min="3" max="50" value="12" oninput="setPrice(this.value)">
-      </div>
-    </div>
-  </div>
-  <div class="section">
     <h2 onclick="toggleSection(this)">Build &amp; Upgrade</h2>
     <div class="section-body">
       <button class="action-btn" id="btn-loom" onclick="buyLoom()">Buy Hand Loom (30g)</button>
@@ -153,6 +162,37 @@ button.action-btn.upgrade:hover { background: #67804f; }
   </div>
   <h2 style="font-size:12px; color:#7a5c38; font-variant:small-caps; cursor:pointer; user-select:none;" onclick="document.getElementById('messages').style.display = document.getElementById('messages').style.display === 'none' ? '' : 'none'">Event Log &#9660;</h2>
   <div id="messages"></div>
+</div>
+
+<div id="market-bar">
+  <div class="mkt-group">
+    <div class="mkt-label">buy cotton for</div>
+    <div class="mkt-row">
+      <button class="mkt-btn" id="btn-cotton-down">&#8722;</button>
+      <div class="mkt-val" id="v-cottonbid">4g</div>
+      <button class="mkt-btn" id="btn-cotton-up">+</button>
+    </div>
+    <div class="mkt-hint" id="h-cotton"></div>
+  </div>
+  <div class="mkt-group">
+    <div class="mkt-label">pay workers</div>
+    <div class="mkt-row">
+      <button class="mkt-btn" id="btn-wage-down">&#8722;</button>
+      <div class="mkt-val" id="v-wage">5g</div>
+      <button class="mkt-btn" id="btn-wage-up">+</button>
+    </div>
+    <div class="mkt-hint" id="h-wage"></div>
+  </div>
+  <div class="mkt-group">
+    <div class="mkt-label">sell cloth for</div>
+    <div class="mkt-row">
+      <button class="mkt-btn" id="btn-cloth-down">&#8722;</button>
+      <div class="mkt-val" id="v-clothprice">12g</div>
+      <button class="mkt-btn" id="btn-cloth-up">+</button>
+    </div>
+    <div class="mkt-hint" id="h-cloth"></div>
+  </div>
+  <div id="margin-chip">margin / cloth<br><span class="m-val" id="v-margin">+3g</span></div>
 </div>
 
 <script>
@@ -313,7 +353,7 @@ const game = {
   era: 1,
   wages: 5,
   clothPrice: 12,
-  cottonMarketPrice: 4,
+  cottonBid: 4,
   looms: [],
   workers: [],
   transports: [],
@@ -332,13 +372,32 @@ const game = {
   millAngle: 0,
   riverOffset: 0,
   townGrowthTimer: 20,
-  cartSpawnTimer: 3,
+  cottonTimer: 2,
+  buyerTimer: 6,
+  floaters: [],
   competitors: [
-    { name: 'SMITH & CO', x: CFG.COMP1_X, w: CFG.COMP1_W, wages: 4, workers: 0, seats: 3 },
-    { name: 'JONES MILL', x: CFG.COMP2_X, w: CFG.COMP2_W, wages: 4, workers: 0, seats: 3 },
+    { name: 'SMITH & CO', aiType: 'aggressive', x: CFG.COMP1_X, w: CFG.COMP1_W,
+      gold: 260, cotton: 10, cloth: 0, wage: 4, cottonBid: 4, clothPrice: 11,
+      workers: 0, seats: 3, prodAcc: 0, aiTimer: 1.5 },
+    { name: 'JONES MILL', aiType: 'thrifty', x: CFG.COMP2_X, w: CFG.COMP2_W,
+      gold: 300, cotton: 10, cloth: 0, wage: 4, cottonBid: 3, clothPrice: 14,
+      workers: 0, seats: 3, prodAcc: 0, aiTimer: 2.5 },
   ],
   workerIdCounter: 0,
 };
+
+function addFloater(x, y, text, color) {
+  game.floaters.push({ x, y, text, color, life: 1.7 });
+  if (game.floaters.length > 60) game.floaters.shift();
+}
+function updateFloaters(dt) {
+  for (let i = game.floaters.length - 1; i >= 0; i--) {
+    const f = game.floaters[i];
+    f.y -= 24 * dt;
+    f.life -= dt;
+    if (f.life <= 0) game.floaters.splice(i, 1);
+  }
+}
 
 // ============ INITIALIZATION ============
 function initGame() {
@@ -346,8 +405,10 @@ function initGame() {
   for (let i = 0; i < 5; i++) game.townHouses.push(createTownHouse(i));
   for (let i = 0; i < CFG.INITIAL_TOWN_POP; i++) spawnWorker('town');
   addMessage('Welcome to River & Thread!', 'info');
-  addMessage('Your factory has 3 hand looms. Set wages to attract workers.', 'info');
-  addMessage('Carts will bring cotton and buy your cloth.', 'info');
+  addMessage('Set your three prices below: cotton, wages, cloth.', 'info');
+  addMessage('Carts sell cotton to the highest bidder in town.', 'info');
+  addMessage('Workers take the best pay — and quit for better.', 'info');
+  addMessage('Buyers purchase from whoever sells cloth cheapest.', 'info');
 }
 
 function createLoom(index, type) {
@@ -369,13 +430,18 @@ function createLoom(index, type) {
 const HOUSE_BODIES = ['#ecdfbc', '#c0392b', '#f4efe2', '#d9c69a', '#a84a38', '#e8d9b0'];
 const HOUSE_ROOFS = ['#2f2b27', '#4a382c', '#3a3f4a', '#553d2e'];
 
-// Town houses fill two receding rows: mid row (even idx) and back row (odd idx)
-function townPlot(index) {
-  const row = index % 2;
-  const col = Math.floor(index / 2);
-  if (row === 0) return { x: 80 + col * 160, base: CFG.MID_ROW_BASE, w: 88, h: 76, back: false };
-  return { x: 130 + col * 135, base: CFG.BACK_ROW_BASE, w: 62, h: 54, back: true };
-}
+// Town houses fill two receding rows. The build order is hand-spread so the
+// starting houses scatter across the middle of the map (visible from the
+// opening view) and later houses knit the town together.
+function midP(col) { return { x: 80 + col * 160, base: CFG.MID_ROW_BASE, w: 88, h: 76, back: false }; }
+function backP(col) { return { x: 130 + col * 135, base: CFG.BACK_ROW_BASE, w: 62, h: 54, back: true }; }
+const TOWN_PLOTS = [
+  midP(2), backP(4), midP(6), backP(8), midP(4),
+  midP(8), backP(2), midP(0), backP(6), midP(9),
+  backP(0), midP(1), backP(10), midP(3), backP(1),
+  midP(5), backP(3), midP(7), backP(5), backP(7), backP(9),
+];
+function townPlot(index) { return TOWN_PLOTS[Math.min(index, TOWN_PLOTS.length - 1)]; }
 function createTownHouse(index) {
   const p = townPlot(index);
   return {
@@ -430,6 +496,9 @@ function spawnWorker(origin) {
     walkTimer: 0,
     decisionTimer: 0,
     shiftProgress: 0,
+    shiftLen: 0.7 + Math.random() * 0.9,   // staggered shifts
+    minWage: 2 + Math.random() * 3,        // won't work below this
+    noWorkTimer: 0,
     carryingCloth: false,
     bobPhase: Math.random() * Math.PI * 2,
     direction: 1,
@@ -470,6 +539,7 @@ function updateWorkers(dt) {
         w.bobPhase += dt * 5;
         w.decisionTimer -= dt;
         w.walkTimer -= dt;
+        w.minWage = Math.max(1.5, w.minWage - dt * 0.06); // patience lowers standards
         if (w.walkTimer <= 0) {
           w.targetX = wanderTarget();
           w.walkTimer = 2 + Math.random() * 3;
@@ -509,6 +579,9 @@ function updateWorkers(dt) {
               w.targetX = loom.x + 62;
               w.targetY = loom.base;
               w.state = WS.ENTERING_FACTORY;
+              w.shiftProgress = 0;
+              w.shiftLen = 0.7 + Math.random() * 0.9;
+              addFloater(w.x, w.y - 70, 'hired!', '#4a7030');
               if (loom.needsEnergy) game.energyUsed++;
             } else {
               w.employer = null;
@@ -522,6 +595,7 @@ function updateWorkers(dt) {
               comp.workers++;
               w.state = WS.WORKING;
               w.shiftProgress = 0;
+              w.shiftLen = 0.7 + Math.random() * 0.9;
               w.visible = false;
             } else {
               w.employer = null;
@@ -536,16 +610,18 @@ function updateWorkers(dt) {
         w.bobPhase += dt * 7;
         if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * dt)) {
           w.state = WS.WORKING;
-          w.shiftProgress = 0;
         }
         break;
 
-      case WS.WORKING:
+      case WS.WORKING: {
         w.shiftProgress += dt / CFG.DAY_LENGTH;
+        // tempted away by better pay elsewhere (works in both directions)
+        if (Math.random() < dt * 0.12 && tryPoach(w)) break;
         if (w.employer === 'player' && w.assignedLoom) {
           const loom = w.assignedLoom;
-          loom.active = true;
-          if (game.cotton > 0) {
+          if (game.cotton > 0 && game.money >= game.wages) {
+            loom.active = true;
+            w.noWorkTimer = 0;
             loom.progress += loom.productionRate * dt;
             if (loom.progress >= 1) {
               loom.progress = 0;
@@ -558,18 +634,28 @@ function updateWorkers(dt) {
             }
           } else {
             loom.active = false;
+            w.noWorkTimer += dt;
+            if (w.noWorkTimer > 10) {
+              addFloater(w.x, w.y - 70, game.cotton > 0 ? 'unpaid!' : 'no cotton!', '#a83828');
+              quitToStreet(w);
+              break;
+            }
           }
         }
-        if (w.shiftProgress >= 1) endShift(w);
+        if (w.shiftProgress >= w.shiftLen) endShift(w);
         break;
+      }
 
       case WS.CARRYING_CLOTH:
         w.bobPhase += dt * 7;
         if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * 0.7 * dt)) {
           game.cloth++;
           game.clothProducedToday++;
+          game.money -= game.wages;             // piece-rate: paid per cloth
+          game.dailyIncomeTracker -= game.wages;
+          addFloater(w.x, w.y - 60, '+1 cloth', '#3d5a8f');
           w.carryingCloth = false;
-          if (w.shiftProgress >= 1) {
+          if (w.shiftProgress >= w.shiftLen) {
             endShift(w);
           } else if (w.assignedLoom) {
             w.targetX = w.assignedLoom.x + 62;
@@ -592,7 +678,7 @@ function updateWorkers(dt) {
   }
 }
 
-function endShift(w) {
+function releaseJob(w) {
   if (w.assignedLoom) {
     if (w.assignedLoom.needsEnergy) game.energyUsed = Math.max(0, game.energyUsed - 1);
     w.assignedLoom.worker = null;
@@ -603,30 +689,79 @@ function endShift(w) {
     const comp = game.competitors.find(c => c.name === w.employer);
     if (comp) comp.workers = Math.max(0, comp.workers - 1);
   }
-  if (w.employer === 'player') {
-    game.money -= game.wages;
-    game.dailyIncomeTracker -= game.wages;
-  }
   w.employer = null;
   w.carryingCloth = false;
+  w.noWorkTimer = 0;
+}
+
+function endShift(w) {
+  releaseJob(w);
   w.state = WS.WALKING_HOME;
   w.targetX = w.homeX;
   w.y = CFG.STREET_Y;
   w.visible = true;
 }
 
+// quit without going home — back to the street to look for better work
+function quitToStreet(w) {
+  releaseJob(w);
+  w.state = WS.WALKING_TO_STREET;
+  w.targetX = wanderTarget();
+  w.visible = true;
+}
+
+function playerHasOpenLoom() {
+  return game.looms.some(l => l.worker === null && (!l.needsEnergy || game.energyUsed < game.energyMax));
+}
+
+function currentWage(w) {
+  if (w.employer === 'player') return game.wages;
+  const comp = game.competitors.find(c => c.name === w.employer);
+  return comp ? comp.wage : 0;
+}
+
+// while working: jump ship for pay at least 2g better
+function tryPoach(w) {
+  const myWage = currentWage(w);
+  const options = [];
+  if (w.employer !== 'player' && playerHasOpenLoom() && game.wages >= myWage + 2 && game.money >= game.wages) {
+    options.push({ employer: 'player', wage: game.wages, targetX: CFG.FACTORY_X + 50 });
+  }
+  for (const comp of game.competitors) {
+    if (comp.name !== w.employer && comp.workers < comp.seats && comp.wage >= myWage + 2 && comp.gold >= comp.wage) {
+      options.push({ employer: comp.name, wage: comp.wage, targetX: comp.x + comp.w / 2 });
+    }
+  }
+  if (options.length === 0) return false;
+  options.sort((a, b) => b.wage - a.wage);
+  const wasInvisible = !w.visible;
+  const oldEmployer = w.employer;
+  addFloater(w.x, w.y - 70, 'I quit!', '#a83828');
+  releaseJob(w);
+  if (wasInvisible) {
+    // was inside a competitor shop: step out the door
+    const oldComp = game.competitors.find(c => c.name === oldEmployer);
+    if (oldComp) { w.x = oldComp.x + oldComp.w / 2; w.y = CFG.STREET_Y; }
+    w.visible = true;
+  }
+  w.employer = options[0].employer;
+  w.targetX = options[0].targetX;
+  w.targetY = CFG.STREET_Y;
+  w.state = WS.WALKING_TO_WORK;
+  return true;
+}
+
 function chooseEmployer(w) {
   const options = [];
-  const openLooms = game.looms.filter(l => l.worker === null && (!l.needsEnergy || game.energyUsed < game.energyMax));
-  if (openLooms.length > 0) {
+  if (playerHasOpenLoom() && game.wages >= w.minWage && game.money >= game.wages) {
     const dist = Math.abs(w.x - (CFG.FACTORY_X + 60));
-    const score = game.wages * 1.5 - dist * 0.002 + w.preferPlayer * 10 + Math.random() * 2;
+    const score = game.wages * 2 - dist * 0.002 + w.preferPlayer * 10 + Math.random() * 1.5;
     options.push({ employer: 'player', score, targetX: CFG.FACTORY_X + 50 });
   }
   for (const comp of game.competitors) {
-    if (comp.workers < comp.seats) {
+    if (comp.workers < comp.seats && comp.wage >= w.minWage && comp.gold >= comp.wage) {
       const dist = Math.abs(w.x - (comp.x + comp.w / 2));
-      const score = comp.wages * 1.5 - dist * 0.002 + Math.random() * 2;
+      const score = comp.wage * 2 - dist * 0.002 + Math.random() * 1.5;
       options.push({ employer: comp.name, score, targetX: comp.x + comp.w / 2 });
     }
   }
@@ -649,122 +784,267 @@ function moveToward(obj, tx, ty, speed) {
   return false;
 }
 
-// ============ TRANSPORT SYSTEM ============
-function spawnTransport(type, cargo) {
-  let capacity, speed, y;
-  if (type === 'cart') {
-    capacity = CFG.CART_CAPACITY; speed = CFG.CART_SPEED; y = CFG.CART_Y;
-  } else if (type === 'barge') {
-    capacity = CFG.BARGE_CAPACITY; speed = CFG.BARGE_SPEED; y = CFG.BARGE_Y;
-  } else {
-    capacity = CFG.RAILCAR_CAPACITY; speed = CFG.RAIL_SPEED; y = CFG.RAIL_Y;
+// ============ MARKET: cotton sells to the highest bidder,
+// ============ buyers purchase from the cheapest cloth ============
+function firmDoorX(id) {
+  if (id === 'player') return CFG.STOREHOUSE_DOOR;
+  const c = game.competitors[id];
+  return c.x + c.w / 2;
+}
+function firmSellDoorX(id) {
+  if (id === 'player') return CFG.WAREHOUSE_DOOR;
+  const c = game.competitors[id];
+  return c.x + c.w / 2;
+}
+// highest bid that can actually pay for `amount`
+function pickCottonBuyer(amount) {
+  const list = [];
+  if (game.cottonBid >= 2 && game.money >= amount * game.cottonBid) {
+    list.push({ id: 'player', bid: game.cottonBid });
   }
+  game.competitors.forEach((c, i) => {
+    if (c.cottonBid >= 2 && c.gold >= amount * c.cottonBid) list.push({ id: i, bid: c.cottonBid });
+  });
+  if (list.length === 0) return null;
+  list.sort((a, b) => b.bid - a.bid || Math.random() - 0.5);
+  return list[0];
+}
+// cheapest asking price the buyer can afford, with stock on hand
+function pickClothSeller(willing) {
+  const list = [];
+  if (game.cloth > 0 && game.clothPrice <= willing) list.push({ id: 'player', price: game.clothPrice });
+  game.competitors.forEach((c, i) => {
+    if (c.cloth > 0 && c.clothPrice <= willing) list.push({ id: i, price: c.clothPrice });
+  });
+  if (list.length === 0) return null;
+  list.sort((a, b) => a.price - b.price || Math.random() - 0.5);
+  return list[0];
+}
+function transportKind() {
+  return game.era === 1 ? 'cart'
+       : game.era === 2 ? (Math.random() < 0.6 ? 'barge' : 'cart')
+       : (Math.random() < 0.5 ? 'railcar' : Math.random() < 0.7 ? 'barge' : 'cart');
+}
+function transportY(type) {
+  return type === 'cart' ? CFG.CART_Y : type === 'barge' ? CFG.BARGE_Y : CFG.RAIL_Y;
+}
+function transportStats(type) {
+  if (type === 'cart') return { capacity: CFG.CART_CAPACITY, speed: CFG.CART_SPEED };
+  if (type === 'barge') return { capacity: CFG.BARGE_CAPACITY, speed: CFG.BARGE_SPEED };
+  return { capacity: CFG.RAILCAR_CAPACITY, speed: CFG.RAIL_SPEED };
+}
+
+function spawnCottonSeller() {
+  const type = transportKind();
+  const { capacity, speed } = transportStats(type);
+  const buyer = pickCottonBuyer(capacity);
   const t = {
-    type, cargo, y, state: 'moving', loadTimer: 0,
-    amount: cargo === 'cotton' ? capacity : 0,
-    capacity, speed,
-    loaded: cargo === 'cotton',
-    x: 0, targetX: 0,
+    type, cargo: 'cotton', kind: 'seller',
+    x: -80, y: transportY(type),
+    amount: capacity, capacity, speed,
+    loaded: true, state: 'moving', loadTimer: 0,
+    buyer: buyer ? buyer.id : null,
+    targetX: buyer ? firmDoorX(buyer.id) : WORLD_W + 100, // nobody bidding: drive on through
   };
-  if (cargo === 'cotton') {
-    t.x = -80;
-    t.targetX = type === 'cart' ? CFG.STOREHOUSE_DOOR
-              : type === 'barge' ? CFG.FACTORY_X + 300
-              : CFG.FACTORY_X + 200;
-  } else {
-    t.x = WORLD_W + 100;
-    t.targetX = type === 'cart' ? CFG.WAREHOUSE_DOOR
-              : type === 'barge' ? CFG.FACTORY_X + CFG.FACTORY_W - 200
-              : CFG.FACTORY_X + CFG.FACTORY_W - 150;
-    t.loaded = false;
-  }
+  game.transports.push(t);
+}
+function spawnClothBuyer() {
+  const type = transportKind();
+  const { capacity, speed } = transportStats(type);
+  const willing = 8 + Math.random() * 16 + game.era * 3;
+  const seller = pickClothSeller(willing);
+  const t = {
+    type, cargo: 'cloth', kind: 'buyer',
+    x: WORLD_W + 100, y: transportY(type),
+    amount: 0, capacity, speed, willing,
+    loaded: false, state: 'moving', loadTimer: 0,
+    buyer: seller ? seller.id : null,
+    targetX: seller ? firmSellDoorX(seller.id) : -100, // nothing worth buying: pass through
+  };
   game.transports.push(t);
 }
 
-function updateTransports(dt) {
-  game.cartSpawnTimer -= dt;
-  if (game.cartSpawnTimer <= 0) {
-    const base = game.era === 1 ? 7 : game.era === 2 ? 5 : 3.5;
-    game.cartSpawnTimer = base + Math.random() * 4;
-    const tType = game.era === 1 ? 'cart'
-                : game.era === 2 ? (Math.random() < 0.6 ? 'barge' : 'cart')
-                : (Math.random() < 0.5 ? 'railcar' : Math.random() < 0.7 ? 'barge' : 'cart');
+function settleCottonSale(t) {
+  const id = t.buyer;
+  if (id === null) return;
+  const price = id === 'player' ? game.cottonBid : game.competitors[id].cottonBid;
+  const cost = t.amount * price;
+  if (id === 'player') {
+    if (game.money < cost) { addFloater(t.x, t.y - 50, 'no sale!', '#a83828'); return; }
+    game.money -= cost;
+    game.cotton += t.amount;
+    game.dailyIncomeTracker -= cost;
+    addFloater(t.x, t.y - 55, `+${t.amount} cotton`, '#7a5c38');
+    addMessage(`Bought ${t.amount} cotton for ${Math.floor(cost)}g`, 'info');
+  } else {
+    const c = game.competitors[id];
+    if (c.gold < cost) { addFloater(t.x, t.y - 50, 'no sale!', '#a83828'); return; }
+    c.gold -= cost;
+    c.cotton += t.amount;
+    addFloater(t.x, t.y - 55, `+${t.amount}`, '#8a857c');
+  }
+  t.loaded = false;
+  t.amount = 0;
+}
+function settleClothSale(t) {
+  const id = t.buyer;
+  if (id === null) return;
+  if (id === 'player') {
+    if (game.cloth <= 0 || game.clothPrice > t.willing) { addFloater(t.x, t.y - 50, 'too dear!', '#a83828'); return; }
+    const sell = Math.min(game.cloth, t.capacity);
+    const revenue = sell * game.clothPrice;
+    game.cloth -= sell;
+    game.money += revenue;
+    game.dailyIncomeTracker += revenue;
+    game.totalClothSold += sell;
+    game.totalRevenue += revenue;
+    addFloater(t.x, t.y - 55, `+${Math.floor(revenue)}g`, '#c9972e');
+    addMessage(`Sold ${sell} cloth for ${Math.floor(revenue)}g!`, 'good');
+    t.loaded = true; t.amount = sell;
+  } else {
+    const c = game.competitors[id];
+    if (c.cloth <= 0 || c.clothPrice > t.willing) { addFloater(t.x, t.y - 50, 'too dear!', '#a83828'); return; }
+    const sell = Math.min(c.cloth, t.capacity);
+    c.cloth -= sell;
+    c.gold += sell * c.clothPrice;
+    addFloater(t.x, t.y - 55, `+${Math.floor(sell * c.clothPrice)}g`, '#8a857c');
+    t.loaded = true; t.amount = sell;
+  }
+}
 
-    const cottonDemand = game.cotton < 15 ? 0.85 : game.cotton < 40 ? 0.5 : 0.15;
-    if (Math.random() < cottonDemand + 0.08) {
-      spawnTransport(tType, 'cotton');
-    }
-    const clothSupply = game.cloth > 5 ? 0.75 : game.cloth > 0 ? 0.45 : 0;
-    const priceAttract = Math.max(0.05, 1 - game.clothPrice / 35);
-    if (Math.random() < clothSupply * priceAttract + 0.05 && game.cloth > 0) {
-      spawnTransport(tType, 'cloth');
-    }
+function updateTransports(dt) {
+  // cotton supply: higher top bid draws more carts
+  game.cottonTimer -= dt;
+  if (game.cottonTimer <= 0) {
+    const base = game.era === 1 ? 5.5 : game.era === 2 ? 4 : 3;
+    const topBid = Math.max(game.cottonBid, ...game.competitors.map(c => c.cottonBid));
+    const attract = Math.max(0.4, Math.min(1.8, topBid / 4));
+    game.cottonTimer = (base + Math.random() * 3) / attract;
+    spawnCottonSeller();
+  }
+  // cloth demand: cheaper market cloth draws more buyers
+  game.buyerTimer -= dt;
+  if (game.buyerTimer <= 0) {
+    const base = game.era === 1 ? 6 : game.era === 2 ? 4.5 : 3.2;
+    const asks = [];
+    if (game.cloth > 0) asks.push(game.clothPrice);
+    game.competitors.forEach(c => { if (c.cloth > 0) asks.push(c.clothPrice); });
+    const minAsk = asks.length ? Math.min(...asks) : 25;
+    const attract = Math.max(0.3, Math.min(1.7, (26 - minAsk) / 14));
+    game.buyerTimer = (base + Math.random() * 3) / attract;
+    spawnClothBuyer();
   }
 
   for (let i = game.transports.length - 1; i >= 0; i--) {
     const t = game.transports[i];
     if (t.state === 'moving') {
       if (moveToward(t, t.targetX, t.y, t.speed * dt)) {
-        if (t.cargo === 'cotton' && t.loaded) {
-          t.state = 'loading'; t.loadTimer = 2;
-        } else if (t.cargo === 'cloth' && !t.loaded && t.targetX < WORLD_W) {
-          t.state = 'loading'; t.loadTimer = 2;
+        if (t.buyer !== null && t.state === 'moving' && !t.settled) {
+          t.state = 'loading'; t.loadTimer = 1.6;
         } else {
           t.targetX = t.x > WORLD_W / 2 ? WORLD_W + 100 : -100;
-          t.state = 'moving';
         }
       }
     } else if (t.state === 'loading') {
       t.loadTimer -= dt;
       if (t.loadTimer <= 0) {
-        if (t.cargo === 'cotton') {
-          const cost = t.amount * game.cottonMarketPrice;
-          if (game.money >= cost) {
-            game.cotton += t.amount;
-            game.money -= cost;
-            game.dailyIncomeTracker -= cost;
-            addMessage(`Bought ${t.amount} cotton for ${Math.floor(cost)}g`, 'info');
-          }
-          t.loaded = false;
-          t.targetX = -100;
-          t.state = 'moving';
-        } else {
-          const sell = Math.min(game.cloth, t.capacity);
-          if (sell > 0) {
-            const revenue = sell * game.clothPrice;
-            game.cloth -= sell;
-            game.money += revenue;
-            game.dailyIncomeTracker += revenue;
-            game.totalClothSold += sell;
-            game.totalRevenue += revenue;
-            addMessage(`Sold ${sell} cloth for ${Math.floor(revenue)}g!`, 'good');
-            t.loaded = true;
-            t.amount = sell;
-          }
-          t.targetX = WORLD_W + 100;
-          t.state = 'moving';
-        }
+        if (t.kind === 'seller') settleCottonSale(t);
+        else settleClothSale(t);
+        t.settled = true;
+        // sellers head back the way they came; buyers carry on
+        t.targetX = t.kind === 'seller' ? -100 : WORLD_W + 100;
+        t.state = 'moving';
       }
     }
-    if ((t.x < -90 && t.targetX < 0) || (t.x > WORLD_W + 90 && t.targetX > WORLD_W && t.state === 'moving')) {
+    if ((t.x < -90 && t.targetX < 0) || (t.x > WORLD_W + 90 && t.targetX > WORLD_W)) {
       game.transports.splice(i, 1);
     }
   }
 }
 
-// ============ ECONOMY & COMPETITION ============
-function updateEconomy(dt) {
-  for (const comp of game.competitors) {
-    if (Math.random() < dt * 0.05) {
-      if (comp.workers < comp.seats * 0.5) {
-        comp.wages = Math.min(game.wages + 3, comp.wages + 0.3);
-      } else {
-        comp.wages = Math.max(2, comp.wages - 0.1);
+// ============ RIVAL FIRMS: production + pricing AI ============
+// adapted from the vineyard game: read market max/avg, labor tightness and
+// cash runway, then step each price 1g toward a target
+function updateFirms(dt) {
+  const seats = 2 + game.era; // rivals grow with the eras: 3, 4, 5
+  for (const c of game.competitors) {
+    c.seats = seats;
+
+    // production: each worker weaves like a hand loom, paid per cloth
+    c.prodAcc += c.workers * CFG.HAND_LOOM_RATE * dt;
+    if (c.prodAcc >= 1) {
+      c.prodAcc -= 1;
+      if (c.cotton >= 1 && c.gold >= c.wage) {
+        c.cotton--;
+        c.cloth++;
+        c.gold -= c.wage;
+      } else if (c.workers > 0 && Math.random() < 0.5) {
+        // starved of cotton or coin: a worker walks out
+        const quitter = game.workers.find(w => w.employer === c.name && w.state === WS.WORKING);
+        if (quitter) {
+          quitter.x = c.x + c.w / 2; quitter.y = CFG.STREET_Y; quitter.visible = true;
+          addFloater(quitter.x, quitter.y - 70, c.cotton < 1 ? 'no cotton!' : 'unpaid!', '#a83828');
+          quitToStreet(quitter);
+        }
       }
     }
-  }
-  if (Math.random() < dt * 0.08) {
-    game.cottonMarketPrice = Math.max(2, Math.min(8, game.cottonMarketPrice + (Math.random() - 0.5) * 0.5));
+
+    // pricing brain
+    c.aiTimer -= dt;
+    if (c.aiTimer <= 0) {
+      c.aiTimer = 2.2 + Math.random() * 1.2;
+      const agg = c.aiType === 'aggressive';
+      const other = game.competitors.find(o => o !== c);
+      const maxWage = Math.max(game.wages, other.wage);
+      const avgWage = (game.wages + other.wage + c.wage) / 3;
+      const maxBid = Math.max(game.cottonBid, other.cottonBid);
+      const askCandidates = [];
+      if (game.cloth > 0) askCandidates.push(game.clothPrice);
+      if (other.cloth > 0) askCandidates.push(other.clothPrice);
+      const cheapestOther = askCandidates.length ? Math.min(...askCandidates) : c.clothPrice;
+      const idle = game.workers.filter(w => w.state === WS.ON_STREET || w.state === WS.DECIDING).length;
+      const hiring = c.workers < c.seats;
+      const cashScared = c.gold < 60;
+
+      // wage target
+      let wt;
+      if (cashScared) {
+        wt = Math.max(2, c.wage - 1);
+      } else if (hiring) {
+        wt = idle < 2 ? maxWage + (agg ? 2 : 1) : Math.max(3, Math.round(avgWage) + (agg ? 1 : 0));
+      } else {
+        const poachThreat = (game.wages >= c.wage + 2 && playerHasOpenLoom())
+          || (other.wage >= c.wage + 2 && other.workers < other.seats);
+        wt = poachThreat ? c.wage : Math.max(2, Math.round(avgWage) - 1);
+      }
+      // never pay more than the margin can bear (fields.html: MAX_WAGE = value - 2)
+      wt = Math.min(wt, Math.max(2, c.clothPrice - c.cottonBid - 1));
+
+      // cotton bid target
+      let bt;
+      if (cashScared) bt = 2;
+      else if (c.cotton < 5) bt = maxBid + 1;
+      else if (c.cotton > 24) bt = 2;
+      else bt = 3 + (agg ? 1 : 0);
+      bt = Math.min(bt, Math.max(2, c.clothPrice - c.wage - 1));
+
+      // cloth price target
+      const unitCost = c.wage + c.cottonBid;
+      let pt;
+      if (c.cloth > 10) pt = Math.max(unitCost + 1, cheapestOther - 1);
+      else if (c.cloth < 2) pt = Math.min(c.clothPrice + 1, 26); // scarcity pushes price up, within reason
+      else pt = Math.max(unitCost + 2, cheapestOther);
+
+      c.wage += Math.sign(wt - c.wage);
+      c.cottonBid += Math.sign(bt - c.cottonBid);
+      c.clothPrice += Math.sign(pt - c.clothPrice);
+      c.wage = Math.max(1, Math.min(30, c.wage));
+      c.cottonBid = Math.max(1, Math.min(20, c.cottonBid));
+      c.clothPrice = Math.max(3, Math.min(40, c.clothPrice));
+
+      // a quiet loan keeps a broke rival in the game
+      if (c.gold < 15 && c.cloth === 0 && c.cotton === 0) c.gold += 50;
+    }
   }
 }
 
@@ -842,8 +1122,9 @@ function update(dt) {
   updateDayNight(dt);
   updateWorkers(dt);
   updateTransports(dt);
-  updateEconomy(dt);
+  updateFirms(dt);
   updateTownGrowth(dt);
+  updateFloaters(dt);
   checkEraProgression();
   updateUI();
 }
@@ -1485,9 +1766,27 @@ function render() {
 
   // competitors
   for (const comp of game.competitors) {
-    const lit = Math.min(6, comp.workers * 2);
+    const lit = Math.min(6, Math.ceil(comp.workers * 6 / comp.seats));
     shopFacade(comp.x, CFG.FRONT_BASE, comp.w, 175, comp === game.competitors[0] ? '#ecdfbc' : '#d9c69a',
-      comp.name, lit, `wages ${Math.floor(comp.wages)}g`);
+      comp.name, lit, `pays ${Math.floor(comp.wage)}g`);
+    // wealth tag over the roof (like the rent game)
+    const tx = comp.x + comp.w / 2, ty = CFG.FRONT_BASE - 175 - 34;
+    ctx.fillStyle = 'rgba(244,238,218,0.92)';
+    ink(1.5, 0.5);
+    ctx.beginPath(); ctx.rect(tx - 44, ty - 14, 88, 20); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#7a5c38';
+    ctx.font = 'bold 13px Georgia'; ctx.textAlign = 'center';
+    ctx.fillText(`${Math.floor(comp.gold)}g`, tx, ty + 1);
+    // asking price plaque (right of door)
+    ctx.fillStyle = '#f4eeda';
+    ink(1.5, 0.5);
+    ctx.beginPath(); ctx.rect(comp.x + comp.w * 0.58, CFG.FRONT_BASE - 35, comp.w * 0.36, 17); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#4a382c';
+    ctx.font = '11px Georgia';
+    ctx.fillText(`cloth ${Math.floor(comp.clothPrice)}g`, comp.x + comp.w * 0.76, CFG.FRONT_BASE - 22);
+    // their unsold cloth piles up by the door — watch rivals price themselves out
+    const stack = Math.min(Math.floor(comp.cloth), 8);
+    baleStackCount(comp.x + 6, CFG.FRONT_BASE - 2, stack, 2, 18, 13, '#3d5a8f', 'rgba(210,220,240,0.5)');
   }
 
   // player worker houses
@@ -1525,6 +1824,7 @@ function render() {
   renderMill(T);
   renderTransports(T);
   renderWorkers(T);
+  renderFloaters();
   renderWorldLabels();
 
   // night overlay
@@ -1781,6 +2081,21 @@ function renderWorkers(T) {
   }
 }
 
+function renderFloaters() {
+  for (const f of game.floaters) {
+    const a = Math.min(1, f.life / 1.7 + 0.2);
+    ctx.font = 'bold 17px Georgia';
+    ctx.textAlign = 'center';
+    ctx.strokeStyle = `rgba(244,238,218,${a * 0.9})`;
+    ctx.lineWidth = 4;
+    ctx.strokeText(f.text, f.x, f.y);
+    ctx.fillStyle = f.color;
+    ctx.globalAlpha = a;
+    ctx.fillText(f.text, f.x, f.y);
+    ctx.globalAlpha = 1;
+  }
+}
+
 function renderWorldLabels() {
   const streetW = game.workers.filter(w => w.visible && (w.state === WS.ON_STREET || w.state === WS.DECIDING || w.state === WS.WALKING_TO_STREET)).length;
   if (streetW > 0) {
@@ -1864,11 +2179,44 @@ function updateUI() {
     document.getElementById('m-cloth').textContent = Math.floor(game.cloth);
     document.getElementById('m-workers').textContent = myW;
   }
+  updateMarketBar();
 }
 
 // ============ PLAYER ACTIONS ============
-function setWage(v) { game.wages = parseInt(v); document.getElementById('wage-val').textContent = v; }
-function setPrice(v) { game.clothPrice = parseInt(v); document.getElementById('price-val').textContent = v; }
+function adjustCottonBid(d) { game.cottonBid = Math.max(1, Math.min(20, game.cottonBid + d)); updateMarketBar(); }
+function adjustWage(d) { game.wages = Math.max(1, Math.min(30, game.wages + d)); updateMarketBar(); }
+function adjustClothPrice(d) { game.clothPrice = Math.max(2, Math.min(40, game.clothPrice + d)); updateMarketBar(); }
+
+function updateMarketBar() {
+  const c1 = game.competitors[0], c2 = game.competitors[1];
+  document.getElementById('v-cottonbid').textContent = game.cottonBid + 'g';
+  document.getElementById('v-wage').textContent = game.wages + 'g';
+  document.getElementById('v-clothprice').textContent = game.clothPrice + 'g';
+
+  const hCotton = document.getElementById('h-cotton');
+  const rivalBid = Math.max(c1.cottonBid, c2.cottonBid);
+  const bidName = c1.cottonBid >= c2.cottonBid ? 'Smith' : 'Jones';
+  if (game.cottonBid > rivalBid) { hCotton.textContent = 'top bid — carts come to you'; hCotton.className = 'mkt-hint'; }
+  else { hCotton.textContent = `${bidName} bids ${rivalBid}g`; hCotton.className = 'mkt-hint warn'; }
+
+  const hWage = document.getElementById('h-wage');
+  const rivalWage = Math.max(c1.wage, c2.wage);
+  const wageName = c1.wage >= c2.wage ? 'Smith' : 'Jones';
+  if (game.wages > rivalWage) { hWage.textContent = 'best pay in town'; hWage.className = 'mkt-hint'; }
+  else { hWage.textContent = `${wageName} pays ${rivalWage}g`; hWage.className = 'mkt-hint warn'; }
+
+  const hCloth = document.getElementById('h-cloth');
+  const rivalAsk = Math.min(c1.clothPrice, c2.clothPrice);
+  const askName = c1.clothPrice <= c2.clothPrice ? 'Smith' : 'Jones';
+  if (game.clothPrice < rivalAsk) { hCloth.textContent = 'cheapest — buyers pick you'; hCloth.className = 'mkt-hint'; }
+  else { hCloth.textContent = `${askName} asks ${rivalAsk}g`; hCloth.className = 'mkt-hint warn'; }
+
+  const margin = game.clothPrice - game.wages - game.cottonBid;
+  const mEl = document.getElementById('v-margin');
+  mEl.textContent = (margin >= 0 ? '+' : '') + margin + 'g';
+  mEl.style.color = margin > 0 ? '#4a7030' : '#a83828';
+}
+
 function setSpeed(s) {
   game.speed = s;
   document.querySelectorAll('#speed-controls button').forEach((b, i) => {
@@ -1947,8 +2295,21 @@ clampCamera();
 initGame();
 requestAnimationFrame(ts => { lastTime = ts; gameLoop(ts); });
 
-window.setWage = setWage;
-window.setPrice = setPrice;
+// market bar buttons: pointerdown only (avoids mobile double-fire)
+function bindStepper(id, fn, d) {
+  document.getElementById(id).addEventListener('pointerdown', e => {
+    e.preventDefault();
+    fn(d);
+  }, { passive: false });
+}
+bindStepper('btn-cotton-down', adjustCottonBid, -1);
+bindStepper('btn-cotton-up', adjustCottonBid, 1);
+bindStepper('btn-wage-down', adjustWage, -1);
+bindStepper('btn-wage-up', adjustWage, 1);
+bindStepper('btn-cloth-down', adjustClothPrice, -1);
+bindStepper('btn-cloth-up', adjustClothPrice, 1);
+updateMarketBar();
+
 window.setSpeed = setSpeed;
 window.buyLoom = buyLoom;
 window.buyPowerLoom = buyPowerLoom;
