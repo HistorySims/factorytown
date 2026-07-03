@@ -7,54 +7,54 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; overflow: hidden; }
-body { background: #1a1a2e; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; color: #e0d6c8; position: relative; }
+body { background: #1c1712; font-family: Georgia, serif; display: flex; color: #3a2c1e; position: relative; }
 #game-canvas { display: block; cursor: grab; flex: 1; min-width: 0; }
 #game-canvas:active { cursor: grabbing; }
-#panel { width: 280px; min-width: 280px; background: #2a1f14; border-left: 3px solid #5a3a1a; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; transition: margin-right 0.3s ease, transform 0.3s ease; z-index: 10; -webkit-overflow-scrolling: touch; }
+#panel { width: 280px; min-width: 280px; background: #f0e7cf; border-left: 3px solid #8a6f4a; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; transition: margin-right 0.3s ease, transform 0.3s ease; z-index: 10; -webkit-overflow-scrolling: touch; }
 #panel.collapsed { margin-right: -283px; }
-#panel h1 { font-size: 18px; color: #f0c060; text-align: center; border-bottom: 2px solid #5a3a1a; padding-bottom: 6px; font-variant: small-caps; letter-spacing: 2px; }
-.section { background: #3a2a18; border: 1px solid #5a3a1a; border-radius: 4px; padding: 8px; }
-.section h2 { font-size: 13px; color: #c0a060; margin-bottom: 6px; font-variant: small-caps; letter-spacing: 1px; cursor: pointer; user-select: none; }
+#panel h1 { font-size: 19px; color: #93392c; text-align: center; border-bottom: 2px solid #c9b998; padding-bottom: 6px; font-style: italic; letter-spacing: 1px; }
+.section { background: #f7f1e0; border: 2px solid #d6c6a2; border-radius: 8px; padding: 8px; }
+.section h2 { font-size: 13px; color: #7a5c38; margin-bottom: 6px; font-variant: small-caps; letter-spacing: 1px; cursor: pointer; user-select: none; }
 .section h2::after { content: ' \25B2'; font-size: 9px; float: right; }
 .section.closed h2::after { content: ' \25BC'; }
 .section.closed .section-body { display: none; }
-.stat-row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; }
-.stat-val { color: #f0d080; font-weight: bold; }
+.stat-row { display: flex; justify-content: space-between; font-size: 12px; margin: 3px 0; color: #4a3826; }
+.stat-val { color: #93392c; font-weight: bold; }
 .slider-row { margin: 5px 0; }
-.slider-row label { font-size: 11px; display: flex; justify-content: space-between; }
-.slider-row input[type=range] { width: 100%; margin-top: 2px; accent-color: #c0a060; height: 20px; }
-button.action-btn { width: 100%; padding: 10px 8px; margin: 3px 0; background: #5a3a1a; color: #f0d080; border: 1px solid #8a6a3a; border-radius: 3px; cursor: pointer; font-size: 13px; font-weight: bold; transition: all 0.15s; touch-action: manipulation; }
-button.action-btn:hover { background: #7a5a2a; }
-button.action-btn:active { background: #9a7a3a; }
+.slider-row label { font-size: 12px; display: flex; justify-content: space-between; color: #4a3826; }
+.slider-row input[type=range] { width: 100%; margin-top: 2px; accent-color: #93392c; height: 20px; }
+button.action-btn { width: 100%; padding: 10px 8px; margin: 3px 0; background: #93392c; color: #f4eeda; border: 2px solid #6e2a20; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: Georgia, serif; transition: all 0.15s; touch-action: manipulation; }
+button.action-btn:hover { background: #a84a38; }
+button.action-btn:active { background: #b85a48; }
 button.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-button.action-btn.upgrade { background: #1a4a3a; border-color: #3a8a6a; color: #80f0c0; }
-button.action-btn.upgrade:hover { background: #2a6a4a; }
-.era-badge { text-align: center; padding: 4px; font-size: 11px; border-radius: 3px; }
-.era-1 { background: #3a3520; color: #d0c080; }
-.era-2 { background: #1a3540; color: #80c0d0; }
-.era-3 { background: #3a1a20; color: #d08090; }
-#messages { flex: 1; min-height: 60px; max-height: 150px; overflow-y: auto; font-size: 11px; background: #1a1510; border: 1px solid #3a2a18; border-radius: 4px; padding: 6px; }
-#messages div { margin: 2px 0; padding: 2px 0; border-bottom: 1px solid #2a1f14; }
-.msg-good { color: #80d080; }
-.msg-bad { color: #d08080; }
-.msg-info { color: #80a0d0; }
-.msg-era { color: #f0d080; font-weight: bold; }
+button.action-btn.upgrade { background: #556b42; border-color: #3d4f2e; }
+button.action-btn.upgrade:hover { background: #67804f; }
+.era-badge { text-align: center; padding: 5px; font-size: 12px; border-radius: 8px; font-style: italic; border: 2px solid; }
+.era-1 { background: #e8e0c0; color: #6a5426; border-color: #c9b998; }
+.era-2 { background: #d8e4e8; color: #3c5f68; border-color: #a8c4cc; }
+.era-3 { background: #ecd8d4; color: #93392c; border-color: #cca8a0; }
+#messages { flex: 1; min-height: 60px; max-height: 150px; overflow-y: auto; font-size: 11px; background: #faf6ea; border: 2px solid #d6c6a2; border-radius: 8px; padding: 6px; }
+#messages div { margin: 2px 0; padding: 2px 0; border-bottom: 1px solid #e8ddc2; }
+.msg-good { color: #4a7030; }
+.msg-bad { color: #a83828; }
+.msg-info { color: #3c5f68; }
+.msg-era { color: #93392c; font-weight: bold; }
 #speed-controls { display: flex; gap: 4px; justify-content: center; }
-#speed-controls button { padding: 5px 12px; font-size: 13px; background: #3a2a18; color: #c0a060; border: 1px solid #5a3a1a; border-radius: 3px; cursor: pointer; touch-action: manipulation; }
-#speed-controls button.active { background: #6a4a2a; border-color: #c0a060; }
-.energy-bar { height: 10px; background: #1a1510; border-radius: 4px; overflow: hidden; margin-top: 4px; }
-.energy-fill { height: 100%; background: linear-gradient(90deg, #4080c0, #60c0f0); transition: width 0.3s; border-radius: 4px; }
-#toggle-panel { position: fixed; top: 10px; right: 10px; z-index: 20; width: 44px; height: 44px; border-radius: 6px; background: rgba(42,31,20,0.92); border: 2px solid #8a6a3a; color: #f0d080; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; transition: right 0.3s ease; line-height: 1; }
-#toggle-panel:hover { background: rgba(90,58,26,0.95); }
-#toggle-panel:active { background: #5a3a1a; }
+#speed-controls button { padding: 5px 12px; font-size: 13px; background: #f7f1e0; color: #7a5c38; border: 2px solid #d6c6a2; border-radius: 8px; cursor: pointer; touch-action: manipulation; }
+#speed-controls button.active { background: #93392c; color: #f4eeda; border-color: #6e2a20; }
+.energy-bar { height: 10px; background: #e0d5b8; border-radius: 5px; overflow: hidden; margin-top: 4px; border: 1px solid #c9b998; }
+.energy-fill { height: 100%; background: linear-gradient(90deg, #557d84, #3c5f68); transition: width 0.3s; border-radius: 4px; }
+#toggle-panel { position: fixed; top: 10px; right: 10px; z-index: 20; width: 44px; height: 44px; border-radius: 10px; background: rgba(244,238,218,0.94); border: 2px solid #8a6f4a; color: #93392c; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; transition: right 0.3s ease; line-height: 1; }
+#toggle-panel:hover { background: #f7f1e0; }
+#toggle-panel:active { background: #e8ddc2; }
 #toggle-panel.panel-open { right: 290px; }
 #mobile-hud { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 5; pointer-events: none; }
-#mobile-hud .hud-bar { display: flex; justify-content: space-around; background: rgba(26,26,46,0.8); padding: 4px 8px; font-size: 11px; }
-#mobile-hud .hud-item { text-align: center; }
-#mobile-hud .hud-val { color: #f0d080; font-weight: bold; }
+#mobile-hud .hud-bar { display: flex; justify-content: space-around; background: rgba(244,238,218,0.88); padding: 4px 8px; font-size: 11px; border-bottom: 2px solid rgba(138,111,74,0.4); }
+#mobile-hud .hud-item { text-align: center; color: #4a3826; }
+#mobile-hud .hud-val { color: #93392c; font-weight: bold; }
 
 @media (max-width: 800px) {
-  #panel { position: fixed; top: 0; right: 0; bottom: 0; width: 280px; min-width: 280px; border-left: 3px solid #5a3a1a; margin-right: 0 !important; }
+  #panel { position: fixed; top: 0; right: 0; bottom: 0; width: 280px; min-width: 280px; border-left: 3px solid #8a6f4a; margin-right: 0 !important; }
   #panel.collapsed { transform: translateX(100%) !important; margin-right: 0 !important; }
   #toggle-panel.panel-open { right: 290px; }
   #mobile-hud { display: block; }
@@ -151,19 +151,21 @@ button.action-btn.upgrade:hover { background: #2a6a4a; }
       <div class="stat-row"><span>Your Houses</span><span class="stat-val" id="s-houses">0</span></div>
     </div>
   </div>
-  <h2 style="font-size:12px; color:#c0a060; font-variant:small-caps; cursor:pointer; user-select:none;" onclick="document.getElementById('messages').style.display = document.getElementById('messages').style.display === 'none' ? '' : 'none'">Event Log &#9660;</h2>
+  <h2 style="font-size:12px; color:#7a5c38; font-variant:small-caps; cursor:pointer; user-select:none;" onclick="document.getElementById('messages').style.display = document.getElementById('messages').style.display === 'none' ? '' : 'none'">Event Log &#9660;</h2>
   <div id="messages"></div>
 </div>
 
 <script>
 // ============================================================
-// RIVER & THREAD - Industrial History Simulation
+// RIVER & THREAD — Industrial History Simulation
+// 2.5-D folk-art township view
 // ============================================================
 
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const panel = document.getElementById('panel');
 const toggleBtn = document.getElementById('toggle-panel');
+const TAU = Math.PI * 2;
 let panelOpen = true;
 
 // ============ PANEL & SECTIONS ============
@@ -174,14 +176,13 @@ function togglePanel() {
   setTimeout(resize, 320);
   resize();
 }
-
 function toggleSection(h2) {
   h2.parentElement.classList.toggle('closed');
 }
 
-// ============ LAYOUT & SIZING ============
-const WORLD_W = 2600;
-const WORLD_H = 680;
+// ============ LAYOUT & CAMERA ============
+const WORLD_W = 2960;
+const WORLD_H = 760;
 let W, H, SCALE;
 function isMobile() { return window.innerWidth <= 800; }
 function resize() {
@@ -190,22 +191,14 @@ function resize() {
   canvas.height = window.innerHeight;
   W = canvas.width;
   H = canvas.height;
-  // Scale to fit height; pan horizontally
   SCALE = H / WORLD_H;
-  if (SCALE < 0.5) SCALE = 0.5;
+  if (SCALE < 0.4) SCALE = 0.4;
   clampCamera();
 }
-resize();
 window.addEventListener('resize', resize);
 
-// ============ CAMERA ============
-let camX = 600; // world X at left edge of screen
-let camVelX = 0;
-let dragging = false;
-let dragStartX = 0;
-let dragStartCam = 0;
-let dragMoved = false;
-
+let camX = 620;
+let dragging = false, dragStartX = 0, dragStartCam = 0;
 function clampCamera() {
   const viewW = W / SCALE;
   const maxCam = WORLD_W - viewW;
@@ -213,57 +206,41 @@ function clampCamera() {
   if (camX > maxCam) camX = maxCam;
   if (maxCam < 0) camX = maxCam / 2;
 }
-
-// Mouse pan
-canvas.addEventListener('mousedown', function(e) {
-  dragging = true; dragMoved = false;
-  dragStartX = e.clientX; dragStartCam = camX;
-  camVelX = 0;
-});
-window.addEventListener('mousemove', function(e) {
+canvas.addEventListener('mousedown', e => { dragging = true; dragStartX = e.clientX; dragStartCam = camX; });
+window.addEventListener('mousemove', e => {
   if (!dragging) return;
-  const dx = e.clientX - dragStartX;
-  if (Math.abs(dx) > 3) dragMoved = true;
-  camX = dragStartCam - dx / SCALE;
+  camX = dragStartCam - (e.clientX - dragStartX) / SCALE;
   clampCamera();
 });
-window.addEventListener('mouseup', function() { dragging = false; });
-
-// Touch pan
+window.addEventListener('mouseup', () => dragging = false);
 let touchId = null;
-canvas.addEventListener('touchstart', function(e) {
+canvas.addEventListener('touchstart', e => {
   if (e.touches.length === 1) {
     const t = e.touches[0];
     touchId = t.identifier;
-    dragging = true; dragMoved = false;
-    dragStartX = t.clientX; dragStartCam = camX;
-    camVelX = 0;
+    dragging = true; dragStartX = t.clientX; dragStartCam = camX;
   }
 }, { passive: true });
-canvas.addEventListener('touchmove', function(e) {
+canvas.addEventListener('touchmove', e => {
   if (!dragging) return;
   for (const t of e.changedTouches) {
     if (t.identifier === touchId) {
-      const dx = t.clientX - dragStartX;
-      if (Math.abs(dx) > 3) dragMoved = true;
-      camX = dragStartCam - dx / SCALE;
+      camX = dragStartCam - (t.clientX - dragStartX) / SCALE;
       clampCamera();
     }
   }
   e.preventDefault();
 }, { passive: false });
-canvas.addEventListener('touchend', function(e) {
+canvas.addEventListener('touchend', e => {
   for (const t of e.changedTouches) {
     if (t.identifier === touchId) { dragging = false; touchId = null; }
   }
 }, { passive: true });
-
-// Keyboard pan
 const keysDown = {};
-window.addEventListener('keydown', function(e) { keysDown[e.key] = true; });
-window.addEventListener('keyup', function(e) { keysDown[e.key] = false; });
+window.addEventListener('keydown', e => { keysDown[e.key] = true; });
+window.addEventListener('keyup', e => { keysDown[e.key] = false; });
 function updateCamera(dt) {
-  const spd = 500;
+  const spd = 600;
   if (keysDown['ArrowLeft'] || keysDown['a']) camX -= spd * dt;
   if (keysDown['ArrowRight'] || keysDown['d']) camX += spd * dt;
   clampCamera();
@@ -271,38 +248,29 @@ function updateCamera(dt) {
 
 // ============ CONFIGURATION ============
 const CFG = {
-  STREET_Y: 438,
-  GROUND_Y: 462,
-  RIVER_Y: 475,
-  RIVER_H: 90,
-  FACTORY_X: 1300,
-  FACTORY_W: 560,
-  FACTORY_ROOF_Y: 168,
-  FACTORY_FLOOR_Y: 462,
-  STOREHOUSE_X: 1315,
-  STOREHOUSE_W: 105,
-  LOOM_AREA_X: 1430,
-  LOOM_AREA_W: 290,
-  WAREHOUSE_X: 1730,
-  WAREHOUSE_W: 105,
-  MILL_X: 1850,
-  MILL_Y: 455,
-  MILL_R: 32,
-  COMP1_X: 700,
-  COMP1_W: 130,
-  COMP2_X: 880,
-  COMP2_W: 130,
-  COMP_ROOF_Y: 250,
-  TOWN_X: 30,
-  TOWN_W: 600,
-  WORKER_SPEED: 60,
-  WORKER_H: 18,
-  WORKER_W: 10,
-  LOOM_W: 36,
-  LOOM_H: 44,
-  LOOM_SPACING: 50,
-  CART_W: 50,
-  CART_H: 24,
+  // world rows (2.5-D township)
+  BACK_ROW_BASE: 340,
+  MID_ROW_BASE: 428,
+  FRONT_BASE: 518,          // Main Street building baseline
+  STREET_TOP: 518,
+  STREET_BOT: 588,
+  STREET_Y: 574,            // worker feet on Main Street
+  CART_Y: 584,
+  RAIL_Y: 630,
+  RIVER_TOP: 648,
+  RIVER_BOT: 736,
+  BARGE_Y: 700,
+  // buildings
+  COMP1_X: 300, COMP1_W: 150,
+  COMP2_X: 540, COMP2_W: 150,
+  PHOUSE_X0: 950, PHOUSE_SPACING: 110,
+  FACTORY_X: 1720, FACTORY_W: 920, FACTORY_H: 330,
+  MILL_X: 2700, MILL_Y: 662, MILL_R: 54,
+  // looms
+  LOOM_S: 112, LOOM_COL_SPACING: 116,
+  LOOM_ROW0_BASE: 514, LOOM_ROW1_BASE: 356,
+  // sim tuning (carried over)
+  WORKER_SPEED: 80,
   DAY_LENGTH: 30,
   HAND_LOOM_RATE: 0.035,
   POWER_LOOM_RATE: 0.08,
@@ -321,32 +289,23 @@ const CFG = {
   CART_CAPACITY: 5,
   BARGE_CAPACITY: 15,
   RAILCAR_CAPACITY: 30,
-  CART_SPEED: 40,
-  BARGE_SPEED: 50,
-  RAIL_SPEED: 80,
+  CART_SPEED: 55,
+  BARGE_SPEED: 60,
+  RAIL_SPEED: 100,
 };
-
-// ============ COLORS ============
-const COL = {
-  sky1: '#87CEEB', sky2: '#B0E0E6',
-  hill1: '#6B8E5A', hill2: '#4A6B3A',
-  ground: '#8B7355', road: '#A0906A',
-  water1: '#3A7CA5', water2: '#2A5C85', water3: '#5A9CC5',
-  canal: '#4A6A8A', rail: '#707070',
-  brick1: '#8B4513', brick2: '#A0522D', brick3: '#CD853F',
-  stone: '#808080', stone2: '#696969',
-  wood: '#8B6914', wood2: '#A07828',
-  roof: '#6B3A2A', roof2: '#5A2A1A',
-  cotton: '#F5F0E0', cloth: '#4169E1',
-  factoryWall: '#9A8A7A', factoryInner: '#C8B898',
-  windowLit: '#FFD700', windowDark: '#3A3020',
-};
+CFG.FACTORY_IX = CFG.FACTORY_X + 22;
+CFG.FACTORY_IW = CFG.FACTORY_W - 44;
+CFG.FACTORY_ITOP = CFG.FRONT_BASE - CFG.FACTORY_H + 20;
+CFG.LOOM_X0 = CFG.FACTORY_IX + 160;
+CFG.WAREHOUSE_IN_X = CFG.FACTORY_IX + CFG.FACTORY_IW - 70;
+CFG.STOREHOUSE_DOOR = CFG.FACTORY_X + 80;
+CFG.WAREHOUSE_DOOR = CFG.FACTORY_X + CFG.FACTORY_W - 80;
 
 // ============ GAME STATE ============
 const game = {
   time: 0,
   day: 1,
-  dayProgress: 0,
+  dayProgress: 0.25,
   speed: 1,
   money: 100,
   cotton: 15,
@@ -360,43 +319,32 @@ const game = {
   transports: [],
   townHouses: [],
   playerHouses: [],
-  notifications: [],
   energyUsed: 0,
   energyMax: CFG.WATER_MILL_ENERGY,
   hasSteam: false,
   hasCanal: false,
   hasRailroad: false,
-  dailyIncome: 0,
   dailyIncomeTracker: 0,
   lastDayIncome: 0,
   clothProducedToday: 0,
   totalClothSold: 0,
   totalRevenue: 0,
   millAngle: 0,
-  steamPuffTimer: 0,
-  steamPuffs: [],
   riverOffset: 0,
   townGrowthTimer: 20,
   cartSpawnTimer: 3,
-  dayNightCycle: 0.25,
   competitors: [
-    { name: 'Smith & Co', x: CFG.COMP1_X, w: CFG.COMP1_W, wages: 4, workers: 0, maxSeats: 3, seats: 3, attractiveness: 0.5 },
-    { name: 'Jones Mill', x: CFG.COMP2_X, w: CFG.COMP2_W, wages: 4, workers: 0, maxSeats: 3, seats: 3, attractiveness: 0.5 },
+    { name: 'SMITH & CO', x: CFG.COMP1_X, w: CFG.COMP1_W, wages: 4, workers: 0, seats: 3 },
+    { name: 'JONES MILL', x: CFG.COMP2_X, w: CFG.COMP2_W, wages: 4, workers: 0, seats: 3 },
   ],
   workerIdCounter: 0,
 };
 
 // ============ INITIALIZATION ============
 function initGame() {
-  for (let i = 0; i < 3; i++) {
-    game.looms.push(createLoom(i, 'hand'));
-  }
-  for (let i = 0; i < 5; i++) {
-    game.townHouses.push(createTownHouse(i));
-  }
-  for (let i = 0; i < CFG.INITIAL_TOWN_POP; i++) {
-    spawnWorker('town');
-  }
+  for (let i = 0; i < 3; i++) game.looms.push(createLoom(i, 'hand'));
+  for (let i = 0; i < 5; i++) game.townHouses.push(createTownHouse(i));
+  for (let i = 0; i < CFG.INITIAL_TOWN_POP; i++) spawnWorker('town');
   addMessage('Welcome to River & Thread!', 'info');
   addMessage('Your factory has 3 hand looms. Set wages to attract workers.', 'info');
   addMessage('Carts will bring cotton and buy your cloth.', 'info');
@@ -405,45 +353,46 @@ function initGame() {
 function createLoom(index, type) {
   const row = Math.floor(index / 5);
   const col = index % 5;
-  const baseX = CFG.LOOM_AREA_X + 15;
   return {
-    index,
-    type,
-    x: baseX + col * CFG.LOOM_SPACING,
-    y: CFG.FACTORY_FLOOR_Y - CFG.LOOM_H - 14 - row * (CFG.LOOM_H + 30),
+    index, type,
+    x: CFG.LOOM_X0 + col * CFG.LOOM_COL_SPACING,
+    base: row === 0 ? CFG.LOOM_ROW0_BASE : CFG.LOOM_ROW1_BASE,
+    row,
     worker: null,
     progress: 0,
     active: false,
-    shuttlePos: 0,
     needsEnergy: type === 'power',
     productionRate: type === 'hand' ? CFG.HAND_LOOM_RATE : CFG.POWER_LOOM_RATE,
   };
 }
 
+const HOUSE_BODIES = ['#ecdfbc', '#c0392b', '#f4efe2', '#d9c69a', '#a84a38', '#e8d9b0'];
+const HOUSE_ROOFS = ['#2f2b27', '#4a382c', '#3a3f4a', '#553d2e'];
+
+// Town houses fill two receding rows: mid row (even idx) and back row (odd idx)
+function townPlot(index) {
+  const row = index % 2;
+  const col = Math.floor(index / 2);
+  if (row === 0) return { x: 80 + col * 160, base: CFG.MID_ROW_BASE, w: 88, h: 76, back: false };
+  return { x: 130 + col * 135, base: CFG.BACK_ROW_BASE, w: 62, h: 54, back: true };
+}
 function createTownHouse(index) {
-  // Houses spread along the town area, wrapping to second row if needed
-  const spacing = 60;
-  const maxPerRow = 10;
-  const row = Math.floor(index / maxPerRow);
-  const col = index % maxPerRow;
+  const p = townPlot(index);
   return {
-    x: CFG.TOWN_X + 15 + col * spacing,
-    y: CFG.GROUND_Y - 52 - row * 62,
-    w: 48, h: 50,
-    color: ['#8B6848', '#9A7858', '#7A5838', '#A08060', '#6A5030', '#8A7050', '#7A6040', '#9A8060'][index % 8],
-    hasSmokestack: Math.random() > 0.35,
-    smokeParticles: [],
+    ...p,
+    body: HOUSE_BODIES[index % HOUSE_BODIES.length],
+    roof: HOUSE_ROOFS[index % HOUSE_ROOFS.length],
+    seed: index,
   };
 }
-
 function createPlayerHouse(index) {
   return {
-    x: CFG.FACTORY_X - 180 - index * 55,
-    y: CFG.GROUND_Y - 50,
-    w: 46, h: 48,
-    color: ['#7A6A50', '#6A5A40', '#8A7A60', '#7A7050', '#6A6040', '#8A7A58'][index % 6],
-    hasSmokestack: true,
-    smokeParticles: [],
+    x: CFG.PHOUSE_X0 + index * CFG.PHOUSE_SPACING,
+    base: CFG.FRONT_BASE,
+    w: 96, h: 105,
+    body: HOUSE_BODIES[(index + 3) % HOUSE_BODIES.length],
+    roof: HOUSE_ROOFS[(index + 1) % HOUSE_ROOFS.length],
+    seed: index + 40,
   };
 }
 
@@ -459,37 +408,31 @@ const WS = {
   CARRYING_CLOTH: 'carrying_cloth',
   WALKING_HOME: 'walking_home',
 };
-
-const WORKER_COLORS = ['#D04040', '#4080D0', '#40A040', '#C0A030', '#A050C0', '#D07030', '#50B0B0', '#C06080'];
+const WORKER_COLS = ['#7d3b2f', '#3f5d70', '#6b4f2e', '#556b42', '#8a5a70', '#a8632e', '#4f6b6b'];
 
 function spawnWorker(origin) {
   const isPlayer = origin === 'player';
   const homeX = isPlayer
-    ? CFG.FACTORY_X - 180 + Math.random() * 120
-    : CFG.TOWN_X + 20 + Math.random() * (CFG.TOWN_W - 40);
+    ? CFG.PHOUSE_X0 + Math.random() * 600
+    : 120 + Math.random() * 800;
   const w = {
     id: game.workerIdCounter++,
     x: homeX,
     y: CFG.STREET_Y,
-    homeX: homeX,
+    homeX,
     homeOrigin: origin,
     state: WS.AT_HOME,
     employer: null,
     assignedLoom: null,
     targetX: homeX,
     targetY: CFG.STREET_Y,
-    color: WORKER_COLORS[Math.floor(Math.random() * WORKER_COLORS.length)],
-    hatColor: WORKER_COLORS[Math.floor(Math.random() * WORKER_COLORS.length)],
+    color: WORKER_COLS[Math.floor(Math.random() * WORKER_COLS.length)],
     walkTimer: 0,
     decisionTimer: 0,
-    workTimer: 0,
     shiftProgress: 0,
     carryingCloth: false,
-    satisfaction: 50 + Math.random() * 20,
-    wageExpectation: 3 + Math.random() * 3,
     bobPhase: Math.random() * Math.PI * 2,
     direction: 1,
-    idleTimer: 1 + Math.random() * 3,
     visible: true,
     atHomeTimer: 2 + Math.random() * 5,
     preferPlayer: isPlayer ? 0.15 : 0,
@@ -497,6 +440,8 @@ function spawnWorker(origin) {
   game.workers.push(w);
   return w;
 }
+
+function wanderTarget() { return 200 + Math.random() * 1450; }
 
 function updateWorkers(dt) {
   for (const w of game.workers) {
@@ -506,7 +451,7 @@ function updateWorkers(dt) {
         w.atHomeTimer -= dt;
         if (w.atHomeTimer <= 0) {
           w.state = WS.WALKING_TO_STREET;
-          w.targetX = 500 + Math.random() * 800;
+          w.targetX = wanderTarget();
           w.visible = true;
           w.y = CFG.STREET_Y;
           w.x = w.homeX;
@@ -514,7 +459,7 @@ function updateWorkers(dt) {
         break;
 
       case WS.WALKING_TO_STREET:
-        w.bobPhase += dt * 5;
+        w.bobPhase += dt * 7;
         if (moveToward(w, w.targetX, CFG.STREET_Y, CFG.WORKER_SPEED * dt)) {
           w.state = WS.ON_STREET;
           w.decisionTimer = 1.5 + Math.random() * 2;
@@ -522,11 +467,11 @@ function updateWorkers(dt) {
         break;
 
       case WS.ON_STREET:
-        w.bobPhase += dt * 4;
+        w.bobPhase += dt * 5;
         w.decisionTimer -= dt;
         w.walkTimer -= dt;
         if (w.walkTimer <= 0) {
-          w.targetX = 500 + Math.random() * 800;
+          w.targetX = wanderTarget();
           w.walkTimer = 2 + Math.random() * 3;
         }
         moveToward(w, w.targetX, CFG.STREET_Y, CFG.WORKER_SPEED * 0.4 * dt);
@@ -543,7 +488,7 @@ function updateWorkers(dt) {
           if (choice) {
             w.employer = choice.employer;
             w.targetX = choice.targetX;
-            w.targetY = choice.targetY;
+            w.targetY = CFG.STREET_Y;
             w.state = WS.WALKING_TO_WORK;
           } else {
             w.state = WS.ON_STREET;
@@ -554,15 +499,15 @@ function updateWorkers(dt) {
         break;
 
       case WS.WALKING_TO_WORK:
-        w.bobPhase += dt * 5;
+        w.bobPhase += dt * 7;
         if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * dt)) {
           if (w.employer === 'player') {
             const loom = game.looms.find(l => l.worker === null && (!l.needsEnergy || game.energyUsed < game.energyMax));
             if (loom) {
               loom.worker = w;
               w.assignedLoom = loom;
-              w.targetX = loom.x + CFG.LOOM_W / 2;
-              w.targetY = loom.y + CFG.LOOM_H - 5;
+              w.targetX = loom.x + 62;
+              w.targetY = loom.base;
               w.state = WS.ENTERING_FACTORY;
               if (loom.needsEnergy) game.energyUsed++;
             } else {
@@ -576,7 +521,6 @@ function updateWorkers(dt) {
             if (comp && comp.workers < comp.seats) {
               comp.workers++;
               w.state = WS.WORKING;
-              w.workTimer = 0;
               w.shiftProgress = 0;
               w.visible = false;
             } else {
@@ -589,10 +533,9 @@ function updateWorkers(dt) {
         break;
 
       case WS.ENTERING_FACTORY:
-        w.bobPhase += dt * 5;
+        w.bobPhase += dt * 7;
         if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * dt)) {
           w.state = WS.WORKING;
-          w.workTimer = 0;
           w.shiftProgress = 0;
         }
         break;
@@ -602,7 +545,6 @@ function updateWorkers(dt) {
         if (w.employer === 'player' && w.assignedLoom) {
           const loom = w.assignedLoom;
           loom.active = true;
-          loom.shuttlePos = Math.sin(game.time * 6) * 0.5 + 0.5;
           if (game.cotton > 0) {
             loom.progress += loom.productionRate * dt;
             if (loom.progress >= 1) {
@@ -610,21 +552,19 @@ function updateWorkers(dt) {
               game.cotton = Math.max(0, game.cotton - CFG.COTTON_PER_CLOTH);
               w.carryingCloth = true;
               w.state = WS.CARRYING_CLOTH;
-              w.targetX = CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2;
-              w.targetY = CFG.FACTORY_FLOOR_Y - 25;
+              w.targetX = CFG.WAREHOUSE_IN_X;
+              w.targetY = CFG.LOOM_ROW0_BASE;
               loom.active = false;
             }
           } else {
             loom.active = false;
           }
         }
-        if (w.shiftProgress >= 1) {
-          endShift(w);
-        }
+        if (w.shiftProgress >= 1) endShift(w);
         break;
 
       case WS.CARRYING_CLOTH:
-        w.bobPhase += dt * 5;
+        w.bobPhase += dt * 7;
         if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * 0.7 * dt)) {
           game.cloth++;
           game.clothProducedToday++;
@@ -632,15 +572,15 @@ function updateWorkers(dt) {
           if (w.shiftProgress >= 1) {
             endShift(w);
           } else if (w.assignedLoom) {
-            w.targetX = w.assignedLoom.x + CFG.LOOM_W / 2;
-            w.targetY = w.assignedLoom.y + CFG.LOOM_H - 5;
+            w.targetX = w.assignedLoom.x + 62;
+            w.targetY = w.assignedLoom.base;
             w.state = WS.ENTERING_FACTORY;
           }
         }
         break;
 
       case WS.WALKING_HOME:
-        w.bobPhase += dt * 4;
+        w.bobPhase += dt * 5;
         if (moveToward(w, w.homeX, CFG.STREET_Y, CFG.WORKER_SPEED * dt)) {
           w.state = WS.AT_HOME;
           w.visible = false;
@@ -679,15 +619,15 @@ function chooseEmployer(w) {
   const options = [];
   const openLooms = game.looms.filter(l => l.worker === null && (!l.needsEnergy || game.energyUsed < game.energyMax));
   if (openLooms.length > 0) {
-    const dist = Math.abs(w.x - (CFG.FACTORY_X + 40));
+    const dist = Math.abs(w.x - (CFG.FACTORY_X + 60));
     const score = game.wages * 1.5 - dist * 0.002 + w.preferPlayer * 10 + Math.random() * 2;
-    options.push({ employer: 'player', score, targetX: CFG.FACTORY_X + 20, targetY: CFG.STREET_Y });
+    options.push({ employer: 'player', score, targetX: CFG.FACTORY_X + 50 });
   }
   for (const comp of game.competitors) {
     if (comp.workers < comp.seats) {
       const dist = Math.abs(w.x - (comp.x + comp.w / 2));
       const score = comp.wages * 1.5 - dist * 0.002 + Math.random() * 2;
-      options.push({ employer: comp.name, score, targetX: comp.x + comp.w / 2, targetY: CFG.STREET_Y });
+      options.push({ employer: comp.name, score, targetX: comp.x + comp.w / 2 });
     }
   }
   if (options.length === 0) return null;
@@ -700,8 +640,7 @@ function moveToward(obj, tx, ty, speed) {
   const dy = ty - obj.y;
   const dist = Math.sqrt(dx * dx + dy * dy);
   if (dist < speed + 0.5) {
-    obj.x = tx;
-    obj.y = ty;
+    obj.x = tx; obj.y = ty;
     return true;
   }
   obj.x += (dx / dist) * speed;
@@ -714,30 +653,29 @@ function moveToward(obj, tx, ty, speed) {
 function spawnTransport(type, cargo) {
   let capacity, speed, y;
   if (type === 'cart') {
-    capacity = CFG.CART_CAPACITY; speed = CFG.CART_SPEED; y = CFG.STREET_Y + 8;
+    capacity = CFG.CART_CAPACITY; speed = CFG.CART_SPEED; y = CFG.CART_Y;
   } else if (type === 'barge') {
-    capacity = CFG.BARGE_CAPACITY; speed = CFG.BARGE_SPEED; y = CFG.RIVER_Y + 30;
+    capacity = CFG.BARGE_CAPACITY; speed = CFG.BARGE_SPEED; y = CFG.BARGE_Y;
   } else {
-    capacity = CFG.RAILCAR_CAPACITY; speed = CFG.RAIL_SPEED; y = CFG.RIVER_Y - 8;
+    capacity = CFG.RAILCAR_CAPACITY; speed = CFG.RAIL_SPEED; y = CFG.RAIL_Y;
   }
   const t = {
     type, cargo, y, state: 'moving', loadTimer: 0,
     amount: cargo === 'cotton' ? capacity : 0,
     capacity, speed,
-    wheelPhase: Math.random() * Math.PI * 2,
     loaded: cargo === 'cotton',
     x: 0, targetX: 0,
   };
   if (cargo === 'cotton') {
-    t.x = -60;
-    t.targetX = type === 'cart' ? CFG.STOREHOUSE_X + CFG.STOREHOUSE_W / 2
-              : type === 'barge' ? CFG.MILL_X - 20
-              : CFG.FACTORY_X + CFG.FACTORY_W - 40;
+    t.x = -80;
+    t.targetX = type === 'cart' ? CFG.STOREHOUSE_DOOR
+              : type === 'barge' ? CFG.FACTORY_X + 300
+              : CFG.FACTORY_X + 200;
   } else {
-    t.x = WORLD_W + 80;
-    t.targetX = type === 'cart' ? CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2
-              : type === 'barge' ? CFG.MILL_X
-              : CFG.FACTORY_X + CFG.FACTORY_W - 40;
+    t.x = WORLD_W + 100;
+    t.targetX = type === 'cart' ? CFG.WAREHOUSE_DOOR
+              : type === 'barge' ? CFG.FACTORY_X + CFG.FACTORY_W - 200
+              : CFG.FACTORY_X + CFG.FACTORY_W - 150;
     t.loaded = false;
   }
   game.transports.push(t);
@@ -765,7 +703,6 @@ function updateTransports(dt) {
 
   for (let i = game.transports.length - 1; i >= 0; i--) {
     const t = game.transports[i];
-    t.wheelPhase += dt * 3;
     if (t.state === 'moving') {
       if (moveToward(t, t.targetX, t.y, t.speed * dt)) {
         if (t.cargo === 'cotton' && t.loaded) {
@@ -773,8 +710,7 @@ function updateTransports(dt) {
         } else if (t.cargo === 'cloth' && !t.loaded && t.targetX < WORLD_W) {
           t.state = 'loading'; t.loadTimer = 2;
         } else {
-          // Done at destination, head off-screen
-          t.targetX = t.x > WORLD_W / 2 ? WORLD_W + 80 : -80;
+          t.targetX = t.x > WORLD_W / 2 ? WORLD_W + 100 : -100;
           t.state = 'moving';
         }
       }
@@ -790,7 +726,7 @@ function updateTransports(dt) {
             addMessage(`Bought ${t.amount} cotton for ${Math.floor(cost)}g`, 'info');
           }
           t.loaded = false;
-          t.targetX = -80;
+          t.targetX = -100;
           t.state = 'moving';
         } else {
           const sell = Math.min(game.cloth, t.capacity);
@@ -805,12 +741,12 @@ function updateTransports(dt) {
             t.loaded = true;
             t.amount = sell;
           }
-          t.targetX = WORLD_W + 80;
+          t.targetX = WORLD_W + 100;
           t.state = 'moving';
         }
       }
     }
-    if ((t.x < -80 && t.targetX < 0) || (t.x > WORLD_W + 60 && t.targetX > WORLD_W && t.state === 'moving')) {
+    if ((t.x < -90 && t.targetX < 0) || (t.x > WORLD_W + 90 && t.targetX > WORLD_W && t.state === 'moving')) {
       game.transports.splice(i, 1);
     }
   }
@@ -840,6 +776,7 @@ function updateTownGrowth(dt) {
     game.townGrowthTimer = rate + Math.random() * 15;
     if (game.townHouses.length < 21) {
       game.townHouses.push(createTownHouse(game.townHouses.length));
+      addMessage('A new house has gone up in town.', 'info');
     }
     const target = game.townHouses.length * 2 + game.playerHouses.length * CFG.WORKERS_PER_HOUSE;
     if (game.workers.length < target) {
@@ -885,48 +822,14 @@ function updateDayNight(dt) {
     game.dailyIncomeTracker = 0;
     game.clothProducedToday = 0;
   }
-  game.dayNightCycle = game.dayProgress;
 }
-
-// ============ PARTICLES ============
-function updateSteamPuffs(dt) {
-  if (game.hasSteam) {
-    game.steamPuffTimer -= dt;
-    if (game.steamPuffTimer <= 0) {
-      game.steamPuffTimer = 0.25 + Math.random() * 0.3;
-      game.steamPuffs.push({
-        x: CFG.FACTORY_X + CFG.FACTORY_W - 56, y: CFG.FACTORY_ROOF_Y - 55,
-        size: 3 + Math.random() * 4, life: 1,
-        vx: 2 + Math.random() * 6, vy: -12 - Math.random() * 8,
-      });
-    }
-  }
-  for (let i = game.steamPuffs.length - 1; i >= 0; i--) {
-    const p = game.steamPuffs[i];
-    p.x += p.vx * dt; p.y += p.vy * dt;
-    p.size += dt * 5; p.life -= dt * 0.5;
-    if (p.life <= 0) game.steamPuffs.splice(i, 1);
-  }
+function brightness() {
+  const t = game.dayProgress;
+  if (t < 0.1) return 0.55 + (t / 0.1) * 0.45;
+  if (t > 0.8) return 0.55 + ((1 - t) / 0.2) * 0.45;
+  return 1;
 }
-
-function updateSmoke(dt) {
-  for (const h of [...game.townHouses, ...game.playerHouses]) {
-    if (!h.hasSmokestack) continue;
-    if (Math.random() < dt * 1.5) {
-      h.smokeParticles.push({
-        x: h.x + h.w * 0.7, y: h.y - 2,
-        size: 1.5 + Math.random() * 2, life: 1,
-        vx: 0.5 + Math.random() * 2, vy: -6 - Math.random() * 4,
-      });
-    }
-    for (let i = h.smokeParticles.length - 1; i >= 0; i--) {
-      const p = h.smokeParticles[i];
-      p.x += p.vx * dt; p.y += p.vy * dt;
-      p.size += dt * 2.5; p.life -= dt * 0.7;
-      if (p.life <= 0) h.smokeParticles.splice(i, 1);
-    }
-  }
-}
+function isNight() { return game.dayProgress > 0.82 || game.dayProgress < 0.08; }
 
 // ============ MAIN UPDATE ============
 function update(dt) {
@@ -942,626 +845,992 @@ function update(dt) {
   updateEconomy(dt);
   updateTownGrowth(dt);
   checkEraProgression();
-  updateSteamPuffs(dt);
-  updateSmoke(dt);
   updateUI();
 }
 
-// ============ RENDERING ============
+// ============================================================
+// FOLK-ART RENDERING
+// ============================================================
+function hash(a, b) { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); }
+function lerp(a, b, t) { return a + (b - a) * t; }
+function ink(w, a) {
+  ctx.strokeStyle = `rgba(48,35,24,${a == null ? 0.6 : a})`;
+  ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+}
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  let r = (n >> 16) + amt, g = ((n >> 8) & 255) + amt, b = (n & 255) + amt;
+  r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
+  return `rgb(${r},${g},${b})`;
+}
+
+// canvas grain
+const tex = document.createElement('canvas');
+tex.width = tex.height = 256;
+const tctx = tex.getContext('2d');
+for (let i = 0; i < 1000; i++) {
+  const x = Math.random() * 256, y = Math.random() * 256;
+  tctx.fillStyle = Math.random() < 0.5 ? 'rgba(60,45,25,0.045)' : 'rgba(255,250,230,0.05)';
+  tctx.fillRect(x, y, 1.5 + Math.random() * 2, 1 + Math.random() * 1.5);
+}
+let grain = null;
+
+function cloud(x, y, s) {
+  ctx.fillStyle = '#f4eeda';
+  ctx.beginPath();
+  ctx.arc(x, y, s * 0.32, 0, TAU);
+  ctx.arc(x + s * 0.28, y - s * 0.13, s * 0.27, 0, TAU);
+  ctx.arc(x + s * 0.56, y - s * 0.02, s * 0.3, 0, TAU);
+  ctx.arc(x + s * 0.3, y + s * 0.1, s * 0.25, 0, TAU);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(180,170,140,0.28)';
+  ctx.beginPath();
+  ctx.ellipse(x + s * 0.28, y + s * 0.2, s * 0.4, s * 0.08, 0, 0, TAU);
+  ctx.fill();
+}
+
+function birdMark(x, y, s) {
+  ink(Math.max(1.5, s * 0.14), 0.85);
+  ctx.beginPath();
+  ctx.moveTo(x - s, y);
+  ctx.quadraticCurveTo(x - s * 0.5, y - s * 0.7, x, y);
+  ctx.quadraticCurveTo(x + s * 0.5, y - s * 0.7, x + s, y);
+  ctx.stroke();
+}
+
+function mound(cx, by, rx, ry, col) {
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.ellipse(cx, by, rx, ry, 0, Math.PI, 0);
+  ctx.fill();
+}
+
+function folkTree(x, y, s, v) {
+  ctx.fillStyle = '#4a352a';
+  ink(Math.max(1, s * 0.05));
+  const th = s * 0.5, tw = s * 0.07;
+  ctx.beginPath();
+  ctx.moveTo(x - tw, y); ctx.lineTo(x - tw * 0.6, y - th);
+  ctx.lineTo(x + tw * 0.6, y - th); ctx.lineTo(x + tw, y);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  const cols = [['#5c7a3c', '#8aa858'], ['#6d8a44', '#a0bb62'], ['#77974a', '#abc66c']];
+  const c = cols[Math.floor(v * 3) % 3];
+  const r = s * (0.4 + v * 0.1);
+  const cy = y - th - r * 0.75;
+  ctx.fillStyle = c[0];
+  ctx.beginPath();
+  ctx.arc(x, cy, r, 0, TAU);
+  ctx.arc(x - r * 0.5, cy + r * 0.28, r * 0.62, 0, TAU);
+  ctx.arc(x + r * 0.5, cy + r * 0.28, r * 0.62, 0, TAU);
+  ctx.fill();
+  ink(Math.max(1, s * 0.045), 0.45);
+  ctx.beginPath(); ctx.arc(x, cy, r, 0, TAU); ctx.stroke();
+  ctx.fillStyle = c[1];
+  for (let i = 0; i < 9; i++) {
+    const a = hash(i, x) * TAU, rr = hash(i + 9, x) * r * 0.75;
+    ctx.beginPath();
+    ctx.arc(x + Math.cos(a) * rr, cy + Math.sin(a) * rr * 0.85, s * 0.045 + hash(i, y) * s * 0.03, 0, TAU);
+    ctx.fill();
+  }
+}
+
+function fenceRun(x1, x2, y, s) {
+  s = s || 1;
+  ctx.fillStyle = '#5f4630';
+  ink(Math.max(1, 1.5 * s), 0.5);
+  for (let x = x1; x <= x2; x += 48 * s) {
+    ctx.beginPath();
+    ctx.rect(x - 2.5 * s, y - 27 * s, 5 * s, 27 * s);
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.strokeStyle = '#5f4630';
+  ctx.lineWidth = 3.5 * s;
+  for (const ry of [9 * s, 19 * s]) {
+    ctx.beginPath();
+    ctx.moveTo(x1, y - ry + (hash(x1, ry) - 0.5) * 4 * s);
+    for (let x = x1 + 40 * s; x <= x2 + 39 * s; x += 40 * s) {
+      const xx = Math.min(x, x2);
+      ctx.lineTo(xx, y - ry + (hash(xx, ry) - 0.5) * 4 * s);
+    }
+    ctx.stroke();
+  }
+}
+
+function flowerPatch(x1, x2, y, n, s) {
+  s = s || 1;
+  const petalCols = ['#e3bf45', '#cf7f3a', '#c94f39', '#e3bf45'];
+  for (let i = 0; i < n; i++) {
+    const fx = lerp(x1, x2, i / Math.max(1, n - 1)) + (hash(i, y) - 0.5) * 18 * s;
+    const fy = y - hash(i, x1) * 8 * s;
+    const hgt = (12 + hash(i, 3) * 8) * s;
+    ctx.strokeStyle = '#5c7a3c'; ctx.lineWidth = 1.6 * s;
+    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx, fy - hgt); ctx.stroke();
+    ctx.fillStyle = petalCols[Math.floor(hash(i, 7) * petalCols.length)];
+    for (let p = 0; p < 6; p++) {
+      const a = p / 6 * TAU;
+      ctx.beginPath();
+      ctx.arc(fx + Math.cos(a) * 3.4 * s, fy - hgt + Math.sin(a) * 3.4 * s, 2.4 * s, 0, TAU);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#7a5426';
+    ctx.beginPath(); ctx.arc(fx, fy - hgt, 2.2 * s, 0, TAU); ctx.fill();
+  }
+}
+
+function duckMark(x, y, s, col) {
+  const bob = Math.sin(game.time * 2 + x) * s * 0.06;
+  y += bob;
+  ink(Math.max(1, s * 0.07), 0.7);
+  ctx.fillStyle = col;
+  ctx.beginPath();
+  ctx.ellipse(x, y, s * 0.5, s * 0.3, 0, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.45, y - s * 0.05);
+  ctx.lineTo(x - s * 0.72, y - s * 0.3);
+  ctx.lineTo(x - s * 0.4, y - s * 0.2);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x + s * 0.42, y - s * 0.38, s * 0.2, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#cf7f3a';
+  ctx.beginPath();
+  ctx.moveTo(x + s * 0.58, y - s * 0.42);
+  ctx.lineTo(x + s * 0.78, y - s * 0.34);
+  ctx.lineTo(x + s * 0.58, y - s * 0.28);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = 'rgba(40,30,20,0.9)';
+  ctx.beginPath(); ctx.arc(x + s * 0.46, y - s * 0.42, s * 0.035, 0, TAU); ctx.fill();
+}
+
+function cowMark(x, y, s) {
+  ink(Math.max(1, s * 0.05), 0.6);
+  ctx.fillStyle = '#c99a5f';
+  ctx.beginPath();
+  ctx.ellipse(x, y - s * 0.42, s * 0.52, s * 0.28, 0, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#8a6540'; ctx.lineWidth = s * 0.07;
+  for (const lx of [-0.32, -0.18, 0.18, 0.32]) {
+    ctx.beginPath();
+    ctx.moveTo(x + lx * s, y - s * 0.2);
+    ctx.lineTo(x + lx * s, y);
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#c99a5f';
+  ink(Math.max(1, s * 0.05), 0.6);
+  ctx.beginPath();
+  ctx.ellipse(x + s * 0.52, y - s * 0.56, s * 0.16, s * 0.13, 0.2, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = 'rgba(40,30,20,0.85)';
+  ctx.beginPath(); ctx.arc(x + s * 0.56, y - s * 0.58, s * 0.025, 0, TAU); ctx.fill();
+}
+
+function sheepMark(x, y, s) {
+  ink(Math.max(1, s * 0.08), 0.6);
+  ctx.fillStyle = '#f2efe6';
+  ctx.beginPath();
+  ctx.ellipse(x, y - s * 0.35, s * 0.5, s * 0.32, 0, 0, TAU);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#d8d4c8';
+  ctx.beginPath(); ctx.arc(x + s * 0.42, y - s * 0.48, s * 0.16, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(48,35,24,0.7)'; ctx.lineWidth = s * 0.07;
+  for (const lx of [-0.22, 0.22]) {
+    ctx.beginPath(); ctx.moveTo(x + lx * s, y - s * 0.1); ctx.lineTo(x + lx * s, y); ctx.stroke();
+  }
+}
+
+// worker sprite: y = feet, s = height
+function folkWorker(x, y, s, col, phase, opts) {
+  opts = opts || {};
+  ctx.fillStyle = 'rgba(40,30,20,0.12)';
+  ctx.beginPath(); ctx.ellipse(x, y, s * 0.2, s * 0.045, 0, 0, TAU); ctx.fill();
+  const swing = opts.still ? 0 : Math.sin(phase) * s * 0.09;
+  ctx.strokeStyle = '#3a2c1e'; ctx.lineWidth = Math.max(1.5, s * 0.06); ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.06, y - s * 0.28); ctx.lineTo(x - s * 0.08 + swing, y);
+  ctx.moveTo(x + s * 0.06, y - s * 0.28); ctx.lineTo(x + s * 0.08 - swing, y);
+  ctx.stroke();
+  ink(Math.max(1.5, s * 0.045), 0.65);
+  ctx.fillStyle = col;
+  ctx.beginPath(); ctx.arc(x, y - s * 0.44, s * 0.225, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#e0b489';
+  ctx.beginPath(); ctx.arc(x, y - s * 0.72, s * 0.135, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = opts.hat || '#4a352a';
+  ctx.beginPath(); ctx.ellipse(x, y - s * 0.81, s * 0.19, s * 0.05, 0, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.rect(x - s * 0.1, y - s * 0.92, s * 0.2, s * 0.11); ctx.fill(); ctx.stroke();
+  if (opts.carry) {
+    ctx.fillStyle = '#3d5a8f';
+    ink(Math.max(1.5, s * 0.045), 0.65);
+    ctx.beginPath();
+    ctx.ellipse(x + s * 0.26, y - s * 0.56, s * 0.14, s * 0.11, 0.3, 0, TAU);
+    ctx.fill(); ctx.stroke();
+  }
+}
+
+// flat folk house (for back/mid rows and simple builds)
+function folkHouse(x, base, w, h, body, roof, opts) {
+  opts = opts || {};
+  ctx.save();
+  ctx.translate(x + w / 2, base);
+  ctx.rotate((hash(opts.seed || x, base) - 0.5) * 0.035);
+  ctx.translate(-(x + w / 2), -base);
+  ink(Math.max(1.5, w * 0.018), 0.6);
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.rect(x, base - h, w, h); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = roof;
+  ctx.beginPath();
+  ctx.moveTo(x - w * 0.1, base - h);
+  ctx.lineTo(x + w / 2, base - h - h * 0.58);
+  ctx.lineTo(x + w * 1.1, base - h);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  if (opts.chimney !== false) {
+    ctx.fillStyle = '#4a352a';
+    ctx.beginPath(); ctx.rect(x + w * 0.66, base - h - h * 0.5, w * 0.11, h * 0.3); ctx.fill(); ctx.stroke();
+  }
+  ctx.fillStyle = '#4a352a';
+  const dw = w * 0.2, dh = h * 0.48;
+  ctx.beginPath(); ctx.rect(x + w / 2 - dw / 2, base - dh, dw, dh); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#e3bf45';
+  ctx.beginPath(); ctx.arc(x + w / 2 + dw * 0.26, base - dh * 0.5, w * 0.016 + 1.2, 0, TAU); ctx.fill();
+  const lit = opts.lit || 0;
+  const ww = w * 0.2, wh = w * 0.19;
+  const slots = [
+    [x + w * 0.22, base - h * 0.68],
+    [x + w * 0.78, base - h * 0.68],
+  ];
+  for (let i = 0; i < slots.length; i++) {
+    const sx = slots[i][0], sy = slots[i][1];
+    ctx.fillStyle = '#efe6cf';
+    ctx.beginPath(); ctx.rect(sx - ww / 2 - w * 0.014, sy - wh / 2 - w * 0.014, ww + w * 0.028, wh + w * 0.028); ctx.fill();
+    ctx.fillStyle = i < lit ? '#f2cf6a' : '#3f4c55';
+    ctx.beginPath(); ctx.rect(sx - ww / 2, sy - wh / 2, ww, wh); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#efe6cf'; ctx.lineWidth = Math.max(1, w * 0.014);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy - wh / 2); ctx.lineTo(sx, sy + wh / 2);
+    ctx.moveTo(sx - ww / 2, sy); ctx.lineTo(sx + ww / 2, sy);
+    ctx.stroke();
+    ink(Math.max(1.5, w * 0.018), 0.6);
+  }
+  ctx.restore();
+}
+
+// 2.5-D house with painted top and side
+function house25(x, base, w, h, body, roof, opts) {
+  opts = opts || {};
+  const dx = w * 0.3, dy = -h * 0.26, e = w * 0.08, rh = h * 0.5;
+  ink(Math.max(1.5, w * 0.02), 0.6);
+  ctx.fillStyle = shade(body, -28);
+  ctx.beginPath();
+  ctx.moveTo(x + w, base); ctx.lineTo(x + w, base - h);
+  ctx.lineTo(x + w + dx, base - h + dy); ctx.lineTo(x + w + dx, base + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  const rfx = x + w / 2, rfy = base - h - rh;
+  ctx.fillStyle = shade(roof, 22);
+  ctx.beginPath();
+  ctx.moveTo(x + w + e, base - h); ctx.lineTo(rfx, rfy);
+  ctx.lineTo(rfx + dx, rfy + dy); ctx.lineTo(x + w + e + dx, base - h + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = roof;
+  ctx.beginPath();
+  ctx.moveTo(x - e, base - h); ctx.lineTo(rfx, rfy);
+  ctx.lineTo(rfx + dx, rfy + dy); ctx.lineTo(x - e + dx, base - h + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.rect(x, base - h, w, h); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = shade(body, 10);
+  ctx.beginPath();
+  ctx.moveTo(x - e, base - h); ctx.lineTo(rfx, rfy); ctx.lineTo(x + w + e, base - h);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#4a352a';
+  ctx.beginPath(); ctx.rect(x + w * 0.4, base - h * 0.45, w * 0.2, h * 0.45); ctx.fill(); ctx.stroke();
+  const lit = opts.lit || 0;
+  for (let i = 0; i < 2; i++) {
+    const wx = x + w * (0.14 + i * 0.6), wy = base - h * 0.66;
+    ctx.fillStyle = i < lit ? '#f2cf6a' : '#3f4c55';
+    ctx.beginPath(); ctx.rect(wx, wy, w * 0.2, w * 0.18); ctx.fill(); ctx.stroke();
+  }
+}
+
+// competitor facade with 6 windows that light per worker
+function shopFacade(x, base, w, h, body, name, litCount, wageText) {
+  ink(Math.max(1.5, w * 0.014), 0.6);
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.rect(x, base - h, w, h); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath(); ctx.rect(x - w * 0.05, base - h - h * 0.07, w * 1.1, h * 0.09); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#4a382c';
+  const sgH = h * 0.11;
+  ctx.beginPath(); ctx.rect(x + w * 0.08, base - h + h * 0.05, w * 0.84, sgH); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#f4eeda';
+  ctx.font = `italic ${Math.max(10, sgH * 0.62)}px Georgia`;
+  ctx.textAlign = 'center';
+  ctx.fillText(name, x + w / 2, base - h + h * 0.05 + sgH * 0.72);
+  const ww = w * 0.2, wh = h * 0.19;
+  let idx = 0;
+  for (let row = 0; row < 2; row++) {
+    for (let col = 0; col < 3; col++) {
+      const wx = x + w * (0.19 + col * 0.31), wy = base - h * (0.62 - row * 0.27);
+      const isLit = idx < litCount;
+      if (isLit) {
+        ctx.fillStyle = 'rgba(242,207,106,0.3)';
+        ctx.beginPath(); ctx.arc(wx, wy, ww * 0.85, 0, TAU); ctx.fill();
+      }
+      ctx.fillStyle = '#efe6cf';
+      ctx.beginPath(); ctx.rect(wx - ww / 2 - 2, wy - wh / 2 - 2, ww + 4, wh + 4); ctx.fill();
+      ctx.fillStyle = isLit ? '#f2cf6a' : '#3f4c55';
+      ctx.beginPath(); ctx.rect(wx - ww / 2, wy - wh / 2, ww, wh); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#efe6cf'; ctx.lineWidth = Math.max(1, w * 0.01);
+      ctx.beginPath();
+      ctx.moveTo(wx, wy - wh / 2); ctx.lineTo(wx, wy + wh / 2);
+      ctx.moveTo(wx - ww / 2, wy); ctx.lineTo(wx + ww / 2, wy);
+      ctx.stroke();
+      ink(Math.max(1.5, w * 0.014), 0.6);
+      idx++;
+    }
+  }
+  ctx.fillStyle = '#4a352a';
+  ctx.beginPath(); ctx.rect(x + w / 2 - w * 0.11, base - h * 0.24, w * 0.22, h * 0.24); ctx.fill(); ctx.stroke();
+  // wage plaque
+  ctx.fillStyle = '#f4eeda';
+  ink(1.5, 0.5);
+  ctx.beginPath(); ctx.rect(x + w * 0.1, base - h * 0.2, w * 0.32, h * 0.1); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#4a382c';
+  ctx.font = `${Math.max(9, h * 0.055)}px Georgia`;
+  ctx.fillText(wageText, x + w * 0.26, base - h * 0.13);
+}
+
+// loom: x = left, base = floor, s = height
+function folkLoom(x, base, s, t, active, progress, isPower) {
+  const w = s * 0.92, pw = s * 0.085;
+  ink(Math.max(1.5, s * 0.03), 0.6);
+  ctx.fillStyle = isPower ? '#57606a' : '#6b4f2e';
+  ctx.beginPath(); ctx.rect(x, base - s, pw, s); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.rect(x + w - pw, base - s, pw, s); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.rect(x - pw * 0.4, base - s, w + pw * 0.8, s * 0.1); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.rect(x, base - s * 0.36, w, s * 0.08); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#efe6cf'; ctx.lineWidth = Math.max(1, s * 0.018);
+  for (let i = 0; i < 8; i++) {
+    const wx = x + pw + (w - pw * 2) * (i / 7);
+    ctx.beginPath();
+    ctx.moveTo(wx, base - s * 0.9);
+    ctx.lineTo(wx + s * 0.02, base - s * 0.4);
+    ctx.stroke();
+  }
+  if (active) {
+    const span = w - pw * 2 - s * 0.16;
+    const sx = x + pw + (Math.sin(t * 6) * 0.5 + 0.5) * span;
+    ctx.fillStyle = '#93392c';
+    ink(Math.max(1, s * 0.02), 0.6);
+    ctx.beginPath();
+    ctx.ellipse(sx + s * 0.08, base - s * 0.55, s * 0.09, s * 0.04, 0, 0, TAU);
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.fillStyle = '#3d5a8f';
+  ink(Math.max(1, s * 0.02), 0.6);
+  ctx.beginPath(); ctx.rect(x + pw, base - s * 0.28, w - pw * 2, s * 0.13); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#4d6ca3';
+  ctx.beginPath(); ctx.arc(x + pw, base - s * 0.215, s * 0.065, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x + w - pw, base - s * 0.215, s * 0.065, 0, TAU); ctx.fill(); ctx.stroke();
+  // progress bar under active loom
+  if (active) {
+    ctx.fillStyle = 'rgba(48,35,24,0.25)';
+    ctx.fillRect(x, base + 5, w, 5);
+    ctx.fillStyle = isPower ? '#557d84' : '#67804f';
+    ctx.fillRect(x, base + 5, w * progress, 5);
+  }
+  if (isPower) {
+    ctx.fillStyle = '#3c5f68';
+    ctx.font = `italic ${Math.max(9, s * 0.11)}px Georgia`; ctx.textAlign = 'center';
+    ctx.fillText('power', x + w / 2, base - s - 6);
+  }
+}
+
+function millWheel(x, y, r, ang) {
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(ang);
+  ctx.strokeStyle = '#4a352a'; ctx.lineWidth = r * 0.16; ctx.lineCap = 'butt';
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke();
+  ctx.lineWidth = r * 0.07;
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.6, 0, TAU); ctx.stroke();
+  for (let i = 0; i < 8; i++) {
+    ctx.save(); ctx.rotate(i / 8 * TAU);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, -r); ctx.stroke();
+    ctx.fillStyle = '#6b4f2e';
+    ctx.fillRect(-r * 0.16, -r - r * 0.05, r * 0.32, r * 0.14);
+    ctx.restore();
+  }
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.12, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+
+function cartHorse(x, y, s, t, dir, cargoCol) {
+  ctx.save();
+  if (dir < 0) { ctx.translate(x, y); ctx.scale(-1, 1); ctx.translate(-x, -y); }
+  ink(Math.max(1.5, s * 0.035), 0.6);
+  ctx.fillStyle = '#a4713d';
+  ctx.beginPath(); ctx.ellipse(x - s * 0.72, y - s * 0.33, s * 0.3, s * 0.17, 0, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#7a512b'; ctx.lineWidth = s * 0.05;
+  const gait = Math.sin(t * 7) * s * 0.05;
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.88, y - s * 0.2); ctx.lineTo(x - s * 0.9 + gait, y);
+  ctx.moveTo(x - s * 0.58, y - s * 0.2); ctx.lineTo(x - s * 0.56 - gait, y);
+  ctx.stroke();
+  ctx.fillStyle = '#a4713d';
+  ink(Math.max(1.5, s * 0.035), 0.6);
+  ctx.beginPath(); ctx.ellipse(x - s * 1.02, y - s * 0.52, s * 0.13, s * 0.1, -0.4, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = '#5f4630'; ctx.lineWidth = s * 0.035;
+  ctx.beginPath(); ctx.moveTo(x - s * 0.5, y - s * 0.3); ctx.lineTo(x - s * 0.1, y - s * 0.3); ctx.stroke();
+  ctx.fillStyle = '#6b4f2e';
+  ink(Math.max(1.5, s * 0.035), 0.6);
+  ctx.beginPath(); ctx.rect(x - s * 0.1, y - s * 0.52, s * 0.85, s * 0.3); ctx.fill(); ctx.stroke();
+  if (cargoCol) {
+    ctx.fillStyle = cargoCol;
+    ctx.beginPath();
+    ctx.arc(x + s * 0.13, y - s * 0.55, s * 0.13, 0, TAU);
+    ctx.arc(x + s * 0.35, y - s * 0.6, s * 0.15, 0, TAU);
+    ctx.arc(x + s * 0.56, y - s * 0.55, s * 0.13, 0, TAU);
+    ctx.fill(); ctx.stroke();
+  }
+  for (const wx of [x + s * 0.08, x + s * 0.58]) {
+    ctx.fillStyle = '#4a352a';
+    ctx.beginPath(); ctx.arc(wx, y - s * 0.13, s * 0.16, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#cbb282'; ctx.lineWidth = s * 0.025;
+    for (let a = 0; a < 4; a++) {
+      const an = a * Math.PI / 4 + t * 3;
+      ctx.beginPath();
+      ctx.moveTo(wx - Math.cos(an) * s * 0.12, y - s * 0.13 - Math.sin(an) * s * 0.12);
+      ctx.lineTo(wx + Math.cos(an) * s * 0.12, y - s * 0.13 + Math.sin(an) * s * 0.12);
+      ctx.stroke();
+    }
+    ink(Math.max(1.5, s * 0.035), 0.6);
+  }
+  ctx.restore();
+}
+
+function bargeMark(x, y, s, cargoCol) {
+  ink(Math.max(2, s * 0.04), 0.6);
+  ctx.fillStyle = '#5d4a38';
+  ctx.beginPath();
+  ctx.moveTo(x - s * 0.9, y); ctx.lineTo(x - s * 0.68, y + s * 0.34);
+  ctx.lineTo(x + s * 0.95, y + s * 0.34); ctx.lineTo(x + s * 1.2, y);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#7a6a55';
+  ctx.beginPath(); ctx.rect(x - s * 0.8, y - s * 0.08, s * 1.9, s * 0.12); ctx.fill(); ctx.stroke();
+  if (cargoCol) {
+    ctx.fillStyle = cargoCol;
+    ctx.beginPath();
+    ctx.arc(x - s * 0.25, y - s * 0.18, s * 0.2, 0, TAU);
+    ctx.arc(x + s * 0.15, y - s * 0.22, s * 0.24, 0, TAU);
+    ctx.arc(x + s * 0.55, y - s * 0.18, s * 0.2, 0, TAU);
+    ctx.fill(); ctx.stroke();
+  }
+  folkWorker(x - s * 0.55, y + s * 0.05, s * 0.62, '#3f5d70', 0, { still: true });
+}
+
+function railcarMark(x, y, s, cargoCol, t) {
+  ink(Math.max(2, s * 0.04), 0.6);
+  ctx.fillStyle = '#4a4642';
+  ctx.beginPath(); ctx.rect(x - s * 0.8, y - s * 0.62, s * 1.6, s * 0.55); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#5a564f';
+  ctx.beginPath(); ctx.rect(x - s * 0.72, y - s * 0.55, s * 1.44, s * 0.41); ctx.fill();
+  if (cargoCol) {
+    ctx.fillStyle = cargoCol;
+    ctx.beginPath();
+    ctx.arc(x - s * 0.3, y - s * 0.68, s * 0.18, 0, TAU);
+    ctx.arc(x + s * 0.05, y - s * 0.74, s * 0.22, 0, TAU);
+    ctx.arc(x + s * 0.4, y - s * 0.68, s * 0.18, 0, TAU);
+    ctx.fill(); ctx.stroke();
+  }
+  ctx.fillStyle = '#2f2b27';
+  for (const wx of [x - s * 0.45, x + s * 0.45]) {
+    ctx.beginPath(); ctx.arc(wx, y, s * 0.14, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = '#8a857c'; ctx.lineWidth = s * 0.03;
+    const an = t * 4;
+    ctx.beginPath();
+    ctx.moveTo(wx - Math.cos(an) * s * 0.1, y - Math.sin(an) * s * 0.1);
+    ctx.lineTo(wx + Math.cos(an) * s * 0.1, y + Math.sin(an) * s * 0.1);
+    ctx.stroke();
+    ink(Math.max(2, s * 0.04), 0.6);
+    ctx.fillStyle = '#2f2b27';
+  }
+}
+
+function smokePuffs(x, y, t, seed, s) {
+  s = s || 1;
+  for (let i = 0; i < 3; i++) {
+    const p = (t * 0.22 + i * 0.33 + hash(seed, i)) % 1;
+    const px = x + p * 22 * s + Math.sin(p * 9 + seed) * 6 * s;
+    const py = y - p * 60 * s;
+    ctx.fillStyle = `rgba(210,203,190,${(1 - p) * 0.4})`;
+    ctx.beginPath(); ctx.arc(px, py, (4 + p * 10) * s, 0, TAU); ctx.fill();
+  }
+}
+
+function baleStackCount(x, base, count, cols, bw, bh, col, col2) {
+  for (let i = 0; i < count; i++) {
+    const r = Math.floor(i / cols), c = i % cols;
+    const bx = x + c * (bw + 3) + (r % 2) * bw * 0.3;
+    const by = base - (r + 1) * (bh + 2);
+    ctx.fillStyle = col;
+    ink(Math.max(1, bw * 0.05), 0.55);
+    ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = col2; ctx.lineWidth = Math.max(1, bw * 0.06);
+    ctx.beginPath();
+    ctx.moveTo(bx + bw * 0.33, by); ctx.lineTo(bx + bw * 0.33, by + bh);
+    ctx.moveTo(bx + bw * 0.66, by); ctx.lineTo(bx + bw * 0.66, by + bh);
+    ctx.stroke();
+  }
+}
+
+// ============ SCENE RENDER ============
 function render() {
   ctx.clearRect(0, 0, W, H);
   ctx.save();
   ctx.scale(SCALE, SCALE);
   ctx.translate(-camX, 0);
 
-  renderSky();
-  renderHills();
-  renderRiver();
-  renderStreet();
-  renderTownHouses();
-  renderPlayerHouses();
-  renderCompetitors();
-  renderFactory();
-  renderWaterMill();
-  if (game.hasSteam) renderSteamEngine();
-  renderLooms();
-  renderStorehouse();
-  renderWarehouse();
-  renderWorkers();
-  renderTransports();
-  renderSteamPuffs();
-  renderWorldLabels();
+  const T = game.time;
+  const night = isNight();
 
-  ctx.restore();
-
-  // HUD in screen space (not affected by camera)
-  renderHUD();
-}
-
-function renderSky() {
-  const t = game.dayNightCycle;
-  let bright = 1;
-  if (t < 0.12) bright = 0.45 + t / 0.12 * 0.55;
-  else if (t > 0.88) bright = 0.45 + (1 - t) / 0.12 * 0.55;
-  const r = Math.floor(135 * bright);
-  const g = Math.floor(206 * bright);
-  const b = Math.floor(235 * bright);
-  const grad = ctx.createLinearGradient(0, 0, 0, 250);
-  grad.addColorStop(0, `rgb(${r},${g},${b})`);
-  grad.addColorStop(1, `rgb(${Math.floor(176*bright)},${Math.floor(224*bright)},${Math.floor(230*bright)})`);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, WORLD_W, CFG.GROUND_Y);
-
-  ctx.fillStyle = `rgba(255,255,255,${0.25 * bright})`;
-  const cRange = WORLD_W + 300;
-  const cx = ((game.time * 4) % cRange) - 100;
-  drawCloud(cx, 40, 60);
-  drawCloud((cx + cRange * 0.33) % cRange - 100, 65, 50);
-  drawCloud((cx + cRange * 0.63) % cRange - 100, 30, 55);
-  drawCloud((cx + cRange * 0.82) % cRange - 100, 50, 48);
-}
-
-function drawCloud(x, y, size) {
-  ctx.beginPath();
-  ctx.arc(x, y, size * 0.38, 0, Math.PI * 2);
-  ctx.arc(x + size * 0.3, y - size * 0.14, size * 0.32, 0, Math.PI * 2);
-  ctx.arc(x + size * 0.55, y, size * 0.36, 0, Math.PI * 2);
-  ctx.arc(x + size * 0.28, y + size * 0.08, size * 0.28, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function renderHills() {
-  ctx.fillStyle = COL.hill1;
-  ctx.beginPath();
-  ctx.moveTo(0, 180);
-  for (let x = 0; x <= WORLD_W; x += 15) {
-    ctx.lineTo(x, 140 + Math.sin(x * 0.008 + 1) * 30 + Math.sin(x * 0.015) * 15);
+  // --- sky + far hills ---
+  ctx.fillStyle = '#cde3d8';
+  ctx.fillRect(-200, 0, WORLD_W + 400, 260);
+  ctx.fillStyle = 'rgba(244,238,218,0.85)';
+  const sunT = game.dayProgress;
+  const sunX = 200 + sunT * (WORLD_W - 400);
+  const sunY = 150 - Math.sin(sunT * Math.PI) * 110;
+  ctx.beginPath(); ctx.arc(sunX, sunY, 34, 0, TAU); ctx.fill();
+  for (let i = 0; i < 6; i++) {
+    cloud(((i * 520 + T * 8) % (WORLD_W + 340)) - 170, 50 + hash(i, 1) * 70, 60 + hash(i, 2) * 45);
   }
-  ctx.lineTo(WORLD_W, 300); ctx.lineTo(0, 300);
-  ctx.fill();
+  birdMark(((T * 24 + 300) % (WORLD_W + 200)) - 100, 100, 11);
+  birdMark(((T * 20 + 1400) % (WORLD_W + 200)) - 100, 140, 9);
+  mound(400, 245, 500, 90, '#8aa858');
+  mound(1200, 245, 600, 110, '#97ad60');
+  mound(2000, 245, 500, 95, '#8aa858');
+  mound(2700, 245, 450, 85, '#97ad60');
+  folkTree(300, 225, 55, 0.3);
+  folkTree(1000, 210, 62, 0.7);
+  folkTree(1700, 222, 52, 0.5);
+  folkTree(2450, 215, 58, 0.85);
 
-  ctx.fillStyle = COL.hill2;
-  ctx.beginPath();
-  ctx.moveTo(0, 210);
-  for (let x = 0; x <= WORLD_W; x += 15) {
-    ctx.lineTo(x, 180 + Math.sin(x * 0.01 + 3) * 20 + Math.sin(x * 0.02 + 1) * 10);
-  }
-  ctx.lineTo(WORLD_W, 300); ctx.lineTo(0, 300);
-  ctx.fill();
-
-  ctx.fillStyle = '#3A5A2A';
-  const treeCount = Math.floor(WORLD_W / 50);
-  for (let i = 0; i < treeCount; i++) {
-    const tx = i * 50 + 15;
-    const ty = 155 + Math.sin(tx * 0.01 + 1) * 25 + Math.sin(tx * 0.015) * 15;
-    drawTree(tx, ty, 7 + Math.sin(i * 2.3) * 3);
-  }
-}
-
-function drawTree(x, y, s) {
-  ctx.fillStyle = '#5A3A20';
-  ctx.fillRect(x - 1, y, 3, s * 0.55);
-  ctx.fillStyle = '#2A6A1A';
-  ctx.beginPath();
-  ctx.moveTo(x - s * 0.5, y); ctx.lineTo(x + 1, y - s); ctx.lineTo(x + s * 0.5, y);
-  ctx.fill();
-  ctx.fillStyle = '#3A7A2A';
-  ctx.beginPath();
-  ctx.moveTo(x - s * 0.38, y - s * 0.3); ctx.lineTo(x + 1, y - s * 1.15); ctx.lineTo(x + s * 0.38, y - s * 0.3);
-  ctx.fill();
-}
-
-function renderRiver() {
-  const ry = CFG.RIVER_Y;
-  const rh = CFG.RIVER_H;
-
-  if (game.hasCanal) {
-    ctx.fillStyle = '#606060';
-    ctx.fillRect(0, ry - 5, WORLD_W, rh + 10);
-    ctx.fillStyle = COL.canal;
-    ctx.fillRect(0, ry, WORLD_W, rh);
-  } else {
-    ctx.fillStyle = COL.water1;
-    ctx.beginPath();
-    ctx.moveTo(0, ry);
-    for (let x = 0; x <= WORLD_W; x += 4) {
-      ctx.lineTo(x, ry + Math.sin((x + game.riverOffset) * 0.02) * 3);
+  // --- receding field bands ---
+  const bands = [
+    { y0: 240, y1: 292, c: '#8fa85c' },
+    { y0: 292, y1: 352, c: '#a9ba72' },
+    { y0: 352, y1: 428, c: '#97ad60' },
+    { y0: 428, y1: 518, c: '#a9ba72' },
+    { y0: 518, y1: 630, c: '#8fa85c' },
+    { y0: 630, y1: 760, c: '#7a944d' },
+  ];
+  for (const b of bands) {
+    ctx.fillStyle = b.c;
+    ctx.fillRect(-200, b.y0, WORLD_W + 400, b.y1 - b.y0);
+    ctx.strokeStyle = 'rgba(70,97,47,0.18)'; ctx.lineWidth = 2;
+    const nrows = Math.floor((b.y1 - b.y0) / 16);
+    for (let i = 1; i < nrows; i++) {
+      const yy = b.y0 + (b.y1 - b.y0) * (i / nrows);
+      ctx.beginPath(); ctx.moveTo(-200, yy); ctx.lineTo(WORLD_W + 200, yy); ctx.stroke();
     }
-    ctx.lineTo(WORLD_W, ry + rh); ctx.lineTo(0, ry + rh);
-    ctx.fill();
   }
 
-  ctx.strokeStyle = 'rgba(120,200,255,0.25)';
-  ctx.lineWidth = 1;
-  const rippleCount = Math.floor(WORLD_W / 130) + 2;
-  for (let i = 0; i < rippleCount; i++) {
-    const wx = ((game.riverOffset * 0.7 + i * 130) % (WORLD_W + 200)) - 100;
-    const wy = ry + 8 + (i % 5) * (rh / 5) + Math.sin(game.time * 2 + i) * 2;
+  // back lane
+  ctx.fillStyle = '#cfb98a';
+  ctx.fillRect(-200, 344, WORLD_W + 400, 22);
+
+  // --- town rows (back first) ---
+  const backHouses = game.townHouses.filter(h => h.back);
+  const midHouses = game.townHouses.filter(h => !h.back);
+  for (const h of backHouses) {
+    folkHouse(h.x, h.base, h.w, h.h, h.body, h.roof, { lit: night ? 2 : 0, seed: h.seed });
+    smokePuffs(h.x + h.w * 0.72, h.base - h.h * 1.4, T, h.seed, 0.55);
+  }
+  // future plots (dashed) — the next two lots the town will build on
+  ctx.setLineDash([7, 6]);
+  ink(2, 0.4);
+  for (let n = game.townHouses.length; n < Math.min(game.townHouses.length + 2, 21); n++) {
+    const p = townPlot(n);
+    ctx.strokeRect(p.x, p.base - p.h, p.w, p.h);
+  }
+  ctx.setLineDash([]);
+
+  // decorative livestock
+  for (let i = 0; i < 3; i++) {
+    sheepMark(1750 + i * 130 + Math.sin(T * 0.3 + i * 2) * 15, 415 + hash(i, 33) * 20, 34);
+  }
+
+  for (const h of midHouses) {
+    house25(h.x, h.base, h.w, h.h, h.body, h.roof, { lit: night ? 2 : (h.seed % 3 === 0 ? 1 : 0) });
+    smokePuffs(h.x + h.w * 0.5, h.base - h.h * 1.6, T, h.seed + 10, 0.7);
+  }
+  cowMark(2200, 505, 70);
+
+  // fences + flowers on the band in front of mid row
+  fenceRun(60, 260, 512, 0.9);
+  flowerPatch(70, 250, 510, 8, 0.9);
+  fenceRun(2680, 2900, 512, 0.9);
+  flowerPatch(2690, 2890, 510, 7, 0.9);
+
+  // --- Main Street surface ---
+  ctx.fillStyle = '#cfb98a';
+  ctx.fillRect(-200, CFG.STREET_TOP, WORLD_W + 400, CFG.STREET_BOT - CFG.STREET_TOP);
+  ink(2, 0.22);
+  ctx.strokeRect(-200, CFG.STREET_TOP, WORLD_W + 400, CFG.STREET_BOT - CFG.STREET_TOP);
+
+  // --- front row buildings ---
+  // town anchor house on the left
+  house25(110, CFG.FRONT_BASE, 120, 100, '#ecdfbc', '#3a3f4a', { lit: night ? 2 : 1 });
+  smokePuffs(170, CFG.FRONT_BASE - 165, T, 71, 0.9);
+
+  // competitors
+  for (const comp of game.competitors) {
+    const lit = Math.min(6, comp.workers * 2);
+    shopFacade(comp.x, CFG.FRONT_BASE, comp.w, 175, comp === game.competitors[0] ? '#ecdfbc' : '#d9c69a',
+      comp.name, lit, `wages ${Math.floor(comp.wages)}g`);
+  }
+
+  // player worker houses
+  for (const h of game.playerHouses) {
+    folkHouse(h.x, h.base, h.w, h.h, h.body, h.roof, { lit: night ? 2 : 1, seed: h.seed });
+    smokePuffs(h.x + h.w * 0.72, h.base - h.h * 1.45, T, h.seed, 0.8);
+  }
+  // hint plot for next player house
+  if (game.playerHouses.length < 6) {
+    ctx.setLineDash([7, 6]);
+    ink(2, 0.3);
+    const nx = CFG.PHOUSE_X0 + game.playerHouses.length * CFG.PHOUSE_SPACING;
+    ctx.strokeRect(nx, CFG.FRONT_BASE - 105, 96, 105);
+    ctx.setLineDash([]);
+  }
+
+  renderFactory(T, night);
+
+  // railroad (era 3) between street and river
+  if (game.hasRailroad) {
+    ctx.fillStyle = '#8a7a5f';
+    ctx.fillRect(-200, CFG.RAIL_Y - 14, WORLD_W + 400, 26);
+    ctx.fillStyle = '#5f4630';
+    for (let x = -180; x < WORLD_W + 200; x += 26) {
+      ctx.fillRect(x, CFG.RAIL_Y - 11, 13, 20);
+    }
+    ctx.strokeStyle = '#57606a'; ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.moveTo(wx, wy); ctx.lineTo(wx + 25 + Math.sin(i) * 8, wy);
+    ctx.moveTo(-200, CFG.RAIL_Y - 7); ctx.lineTo(WORLD_W + 200, CFG.RAIL_Y - 7);
+    ctx.moveTo(-200, CFG.RAIL_Y + 5); ctx.lineTo(WORLD_W + 200, CFG.RAIL_Y + 5);
     ctx.stroke();
   }
 
-  if (game.hasRailroad) {
-    const ry2 = ry - 14;
-    ctx.fillStyle = '#6A5A4A';
-    ctx.fillRect(0, ry2, WORLD_W, 11);
-    ctx.fillStyle = '#999';
-    ctx.fillRect(0, ry2 + 1, WORLD_W, 2);
-    ctx.fillRect(0, ry2 + 8, WORLD_W, 2);
-    ctx.fillStyle = '#5A4A3A';
-    for (let x = 0; x < WORLD_W; x += 14) ctx.fillRect(x, ry2, 7, 11);
-  }
-}
+  renderRiver(T);
+  renderMill(T);
+  renderTransports(T);
+  renderWorkers(T);
+  renderWorldLabels();
 
-function renderStreet() {
-  ctx.fillStyle = COL.ground;
-  ctx.fillRect(0, CFG.GROUND_Y, WORLD_W, CFG.RIVER_Y - CFG.GROUND_Y);
-  ctx.fillStyle = COL.road;
-  ctx.fillRect(0, CFG.STREET_Y - 5, WORLD_W, CFG.GROUND_Y - CFG.STREET_Y + 10);
-  ctx.fillStyle = '#B8A880';
-  for (let x = 0; x < WORLD_W; x += 28) ctx.fillRect(x, CFG.STREET_Y + 7, 14, 2);
-}
-
-function renderTownHouses() {
-  for (const h of game.townHouses) {
-    ctx.fillStyle = h.color;
-    ctx.fillRect(h.x, h.y, h.w, h.h);
-    ctx.fillStyle = COL.roof;
-    ctx.beginPath();
-    ctx.moveTo(h.x - 3, h.y); ctx.lineTo(h.x + h.w / 2, h.y - 14); ctx.lineTo(h.x + h.w + 3, h.y);
-    ctx.fill();
-    ctx.fillStyle = '#4A3020';
-    ctx.fillRect(h.x + h.w / 2 - 5, h.y + h.h - 17, 10, 17);
-    const lit = game.dayNightCycle > 0.82 || game.dayNightCycle < 0.12;
-    ctx.fillStyle = lit ? COL.windowLit : COL.windowDark;
-    ctx.fillRect(h.x + 5, h.y + 8, 10, 10);
-    ctx.fillRect(h.x + h.w - 15, h.y + 8, 10, 10);
-    ctx.strokeStyle = '#3A2A1A'; ctx.lineWidth = 0.8;
-    ctx.strokeRect(h.x + 5, h.y + 8, 10, 10);
-    ctx.strokeRect(h.x + h.w - 15, h.y + 8, 10, 10);
-    for (const p of h.smokeParticles) {
-      ctx.fillStyle = `rgba(150,140,130,${p.life * 0.35})`;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
-    }
-  }
-}
-
-function renderPlayerHouses() {
-  for (const h of game.playerHouses) {
-    ctx.fillStyle = h.color;
-    ctx.fillRect(h.x, h.y, h.w, h.h);
-    ctx.fillStyle = '#5A4A3A';
-    ctx.beginPath();
-    ctx.moveTo(h.x - 2, h.y); ctx.lineTo(h.x + h.w / 2, h.y - 11); ctx.lineTo(h.x + h.w + 2, h.y);
-    ctx.fill();
-    ctx.fillStyle = '#3A2A18';
-    ctx.fillRect(h.x + h.w / 2 - 4, h.y + h.h - 15, 9, 15);
-    ctx.fillStyle = COL.windowLit;
-    ctx.fillRect(h.x + 4, h.y + 6, 8, 8);
-    ctx.fillRect(h.x + h.w - 12, h.y + 6, 8, 8);
-    for (const p of h.smokeParticles) {
-      ctx.fillStyle = `rgba(150,140,130,${p.life * 0.35})`;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
-    }
-  }
-}
-
-function renderCompetitors() {
-  for (const comp of game.competitors) {
-    const bx = comp.x, bw = comp.w;
-    const by = CFG.COMP_ROOF_Y;
-    const bh = CFG.GROUND_Y - by;
-
-    ctx.fillStyle = comp === game.competitors[0] ? '#8A5A3A' : '#7A6A5A';
-    ctx.fillRect(bx, by, bw, bh);
-    ctx.fillStyle = COL.roof2;
-    ctx.fillRect(bx - 4, by - 8, bw + 8, 12);
-
-    ctx.fillStyle = '#2A1A0A';
-    ctx.fillRect(bx + 8, by + 6, bw - 16, 16);
-    ctx.fillStyle = '#D0B080';
-    ctx.font = '9px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(comp.name, bx + bw / 2, by + 18);
-
-    for (let row = 0; row < 2; row++) {
-      for (let col = 0; col < 3; col++) {
-        const wx = bx + 10 + col * 34;
-        const wy = by + 32 + row * 48;
-        const workerHere = col + row * 3 < comp.workers;
-        ctx.fillStyle = workerHere ? COL.windowLit : COL.windowDark;
-        ctx.fillRect(wx, wy, 24, 30);
-        ctx.strokeStyle = '#4A3A2A'; ctx.lineWidth = 1.5;
-        ctx.strokeRect(wx, wy, 24, 30);
-        ctx.beginPath();
-        ctx.moveTo(wx + 12, wy); ctx.lineTo(wx + 12, wy + 30);
-        ctx.moveTo(wx, wy + 15); ctx.lineTo(wx + 24, wy + 15);
-        ctx.stroke();
-      }
-    }
-
-    ctx.fillStyle = '#3A2A18';
-    ctx.fillRect(bx + bw / 2 - 10, by + bh - 32, 20, 32);
-    ctx.fillStyle = '#C0A060';
-    ctx.beginPath(); ctx.arc(bx + bw / 2 + 5, by + bh - 16, 2, 0, Math.PI * 2); ctx.fill();
-
-    // Competitor wages label
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(bx + 5, by + bh - 48, bw - 10, 14);
-    ctx.fillStyle = '#D0C0A0';
-    ctx.font = '8px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(`Wages: ${Math.floor(comp.wages)}g`, bx + bw / 2, by + bh - 38);
-  }
-}
-
-function renderFactory() {
-  const fx = CFG.FACTORY_X, fw = CFG.FACTORY_W;
-  const fy = CFG.FACTORY_ROOF_Y;
-  const fh = CFG.FACTORY_FLOOR_Y - fy;
-
-  ctx.fillStyle = COL.factoryWall;
-  ctx.fillRect(fx, fy, fw, fh);
-  ctx.fillStyle = COL.factoryInner;
-  ctx.fillRect(fx + 5, fy + 5, fw - 10, fh - 5);
-
-  // Wooden floor
-  ctx.fillStyle = '#A08060';
-  ctx.fillRect(fx + 5, CFG.FACTORY_FLOOR_Y - 8, fw - 10, 8);
-  ctx.strokeStyle = '#8A6A4A'; ctx.lineWidth = 0.5;
-  for (let x = fx + 5; x < fx + fw - 5; x += 18) {
-    ctx.beginPath(); ctx.moveTo(x, CFG.FACTORY_FLOOR_Y - 8); ctx.lineTo(x, CFG.FACTORY_FLOOR_Y); ctx.stroke();
+  // night overlay
+  const b = brightness();
+  if (b < 1) {
+    ctx.fillStyle = `rgba(22,28,58,${(1 - b) * 0.5})`;
+    ctx.fillRect(-200, 0, WORLD_W + 400, WORLD_H);
   }
 
-  // Roof
-  ctx.fillStyle = COL.roof;
-  ctx.fillRect(fx - 8, fy - 12, fw + 16, 15);
-  ctx.fillStyle = COL.roof2;
-  ctx.beginPath();
-  ctx.moveTo(fx - 8, fy - 12); ctx.lineTo(fx + fw / 2, fy - 38); ctx.lineTo(fx + fw + 8, fy - 12);
-  ctx.fill();
-
-  // Sign
-  ctx.fillStyle = '#2A1A0A';
-  ctx.fillRect(fx + fw / 2 - 55, fy - 8, 110, 14);
-  ctx.fillStyle = '#F0D080';
-  ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
-  ctx.fillText('YOUR FACTORY', fx + fw / 2, fy + 3);
-
-  // Beams
-  ctx.strokeStyle = '#6A4A2A'; ctx.lineWidth = 3;
-  for (let x = fx + 50; x < fx + fw; x += 80) {
-    ctx.beginPath(); ctx.moveTo(x, fy + 2); ctx.lineTo(x, fy + 28); ctx.stroke();
-  }
-
-  // Section labels
-  ctx.font = '8px monospace'; ctx.fillStyle = '#6A5A4A'; ctx.textAlign = 'center';
-  ctx.fillText('STOREHOUSE', CFG.STOREHOUSE_X + CFG.STOREHOUSE_W / 2, fy + 18);
-  ctx.fillText('WORKSHOP', CFG.LOOM_AREA_X + CFG.LOOM_AREA_W / 2, fy + 18);
-  ctx.fillText('WAREHOUSE', CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2, fy + 18);
-
-  // Dividers
-  ctx.strokeStyle = '#8A7A6A'; ctx.lineWidth = 1;
-  ctx.setLineDash([4, 4]);
-  ctx.beginPath();
-  ctx.moveTo(CFG.LOOM_AREA_X - 5, fy + 24); ctx.lineTo(CFG.LOOM_AREA_X - 5, CFG.FACTORY_FLOOR_Y);
-  ctx.moveTo(CFG.WAREHOUSE_X - 5, fy + 24); ctx.lineTo(CFG.WAREHOUSE_X - 5, CFG.FACTORY_FLOOR_Y);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Front wall base + door
-  ctx.fillStyle = COL.factoryWall;
-  ctx.fillRect(fx, CFG.FACTORY_FLOOR_Y, fw, 4);
-  ctx.fillStyle = '#4A3A28';
-  ctx.fillRect(fx + 10, CFG.STREET_Y - 28, 22, 32);
-  ctx.fillStyle = '#C0A060';
-  ctx.beginPath(); ctx.arc(fx + 26, CFG.STREET_Y - 12, 2, 0, Math.PI * 2); ctx.fill();
-
-  // Steam chimney
-  if (game.hasSteam) {
-    ctx.fillStyle = '#505050';
-    ctx.fillRect(fx + fw - 65, fy - 58, 18, 48);
-    ctx.fillStyle = '#606060';
-    ctx.fillRect(fx + fw - 68, fy - 62, 24, 8);
-  }
-}
-
-function renderStorehouse() {
-  const sx = CFG.STOREHOUSE_X + 8;
-  const sy = CFG.FACTORY_FLOOR_Y;
-  const maxVis = 30;
-  const bales = Math.min(Math.floor(game.cotton), maxVis);
-  for (let i = 0; i < bales; i++) {
-    const row = Math.floor(i / 5);
-    const col = i % 5;
-    const bx = sx + col * 17;
-    const by = sy - 18 - row * 15;
-    ctx.fillStyle = '#F0E8D0';
-    ctx.fillRect(bx, by, 14, 13);
-    ctx.fillStyle = '#E0D8C0';
-    ctx.fillRect(bx + 1, by + 1, 12, 11);
-    ctx.strokeStyle = '#8A7A5A'; ctx.lineWidth = 0.5;
-    ctx.strokeRect(bx + 3, by + 2, 8, 9);
-  }
-  if (game.cotton > 0) {
-    ctx.fillStyle = '#5A4A3A';
-    ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(Math.floor(game.cotton).toString(), CFG.STOREHOUSE_X + CFG.STOREHOUSE_W / 2, sy - 5 - Math.ceil(bales / 5) * 15);
-  }
-}
-
-function renderLooms() {
-  for (const loom of game.looms) {
-    const lx = loom.x, ly = loom.y;
-    const lw = CFG.LOOM_W, lh = CFG.LOOM_H;
-
-    ctx.fillStyle = loom.type === 'hand' ? COL.wood : '#606060';
-    ctx.fillRect(lx, ly, 4, lh);
-    ctx.fillRect(lx + lw - 4, ly, 4, lh);
-    ctx.fillRect(lx, ly, lw, 5);
-    ctx.fillRect(lx, ly + lh - 5, lw, 5);
-    ctx.fillRect(lx, ly + lh * 0.5 - 2, lw, 4);
-
-    if (loom.active) {
-      ctx.strokeStyle = '#D0C0A0'; ctx.lineWidth = 0.5;
-      for (let t = 0; t < 6; t++) {
-        ctx.beginPath();
-        ctx.moveTo(lx + 6 + t * 4.5, ly + 6);
-        ctx.lineTo(lx + 6 + t * 4.5, ly + lh - 6);
-        ctx.stroke();
-      }
-      const sX = lx + 4 + loom.shuttlePos * (lw - 14);
-      ctx.fillStyle = '#C08020';
-      ctx.fillRect(sX, ly + lh * 0.5 - 4, 8, 6);
-      ctx.fillStyle = '#333';
-      ctx.fillRect(lx, ly + lh + 3, lw, 4);
-      ctx.fillStyle = loom.type === 'hand' ? '#60A060' : '#6080D0';
-      ctx.fillRect(lx, ly + lh + 3, lw * loom.progress, 4);
-    }
-
-    if (loom.type === 'power') {
-      ctx.fillStyle = '#4A6A9A';
-      ctx.font = '7px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('PWR', lx + lw / 2, ly - 3);
-    }
-
-    if (!loom.worker && !loom.active) {
-      ctx.fillStyle = `rgba(255,200,50,${0.2 + Math.sin(game.time * 3) * 0.15})`;
-      ctx.fillRect(lx - 2, ly - 2, lw + 4, lh + 4);
-      ctx.fillStyle = '#A09060';
-      ctx.font = '7px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('EMPTY', lx + lw / 2, ly + lh + 12);
-    }
-  }
-}
-
-function renderWarehouse() {
-  const wx = CFG.WAREHOUSE_X + 8;
-  const wy = CFG.FACTORY_FLOOR_Y;
-  const maxVis = 30;
-  const bales = Math.min(Math.floor(game.cloth), maxVis);
-  for (let i = 0; i < bales; i++) {
-    const row = Math.floor(i / 5);
-    const col = i % 5;
-    const bx = wx + col * 17;
-    const by = wy - 18 - row * 15;
-    ctx.fillStyle = '#4060B0';
-    ctx.fillRect(bx, by, 14, 13);
-    ctx.fillStyle = '#5070C0';
-    ctx.fillRect(bx + 1, by + 1, 12, 11);
-    ctx.strokeStyle = '#2A3A6A'; ctx.lineWidth = 0.5;
-    ctx.strokeRect(bx + 3, by + 2, 8, 9);
-  }
-  if (game.cloth > 0) {
-    ctx.fillStyle = '#2A3A6A';
-    ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(Math.floor(game.cloth).toString(), CFG.WAREHOUSE_X + CFG.WAREHOUSE_W / 2, wy - 5 - Math.ceil(bales / 5) * 15);
-  }
-}
-
-function renderWaterMill() {
-  const mx = CFG.MILL_X, my = CFG.MILL_Y, mr = CFG.MILL_R;
-
-  ctx.fillStyle = '#6A5A4A';
-  ctx.fillRect(mx - 22, my - mr - 12, 44, mr + 18);
-
-  ctx.save();
-  ctx.translate(mx, my);
-  ctx.rotate(game.millAngle);
-  ctx.strokeStyle = '#5A3A1A'; ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.arc(0, 0, mr, 0, Math.PI * 2); ctx.stroke();
-  ctx.fillStyle = COL.wood;
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    ctx.save(); ctx.rotate(a);
-    ctx.fillRect(-2, -mr + 2, 4, mr * 0.38);
-    ctx.fillStyle = COL.wood2;
-    ctx.fillRect(-6, -mr, 12, 7);
-    ctx.fillStyle = COL.wood;
-    ctx.restore();
-  }
-  ctx.fillStyle = '#4A3A2A';
-  ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
+  renderHUD();
 
-  ctx.strokeStyle = '#5A4A3A'; ctx.lineWidth = 3;
+  if (!grain) grain = ctx.createPattern(tex, 'repeat');
+  ctx.fillStyle = grain;
+  ctx.fillRect(0, 0, W, H);
+}
+
+function renderFactory(T, night) {
+  const fx = CFG.FACTORY_X, fw = CFG.FACTORY_W, fbase = CFG.FRONT_BASE, fh = CFG.FACTORY_H;
+  const dx = 90, dy = -60, e = 22;
+
+  ink(3, 0.6);
+  // side wall receding back
+  ctx.fillStyle = shade('#93392c', -30);
   ctx.beginPath();
-  ctx.moveTo(mx - 22, my - 14);
-  ctx.lineTo(CFG.FACTORY_X + CFG.FACTORY_W - 5, my - 14);
-  ctx.stroke();
-}
+  ctx.moveTo(fx + fw, fbase); ctx.lineTo(fx + fw, fbase - fh);
+  ctx.lineTo(fx + fw + dx, fbase - fh + dy); ctx.lineTo(fx + fw + dx, fbase + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // roof planes
+  const rfx = fx + fw / 2, rfy = fbase - fh - 95;
+  ctx.fillStyle = shade('#2f2b27', 24);
+  ctx.beginPath();
+  ctx.moveTo(fx + fw + e, fbase - fh); ctx.lineTo(rfx, rfy);
+  ctx.lineTo(rfx + dx, rfy + dy); ctx.lineTo(fx + fw + e + dx, fbase - fh + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath();
+  ctx.moveTo(fx - e, fbase - fh); ctx.lineTo(rfx, rfy);
+  ctx.lineTo(rfx + dx, rfy + dy); ctx.lineTo(fx - e + dx, fbase - fh + dy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // front wall
+  ctx.fillStyle = '#93392c';
+  ctx.beginPath(); ctx.rect(fx, fbase - fh, fw, fh); ctx.fill(); ctx.stroke();
+  // gable
+  ctx.fillStyle = shade('#93392c', 12);
+  ctx.beginPath();
+  ctx.moveTo(fx - e, fbase - fh); ctx.lineTo(rfx, rfy); ctx.lineTo(fx + fw + e, fbase - fh);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // cupola + weathervane
+  ctx.fillStyle = '#ecdfbc';
+  ctx.beginPath(); ctx.rect(rfx - 20, rfy - 6, 40, 34); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#2f2b27';
+  ctx.beginPath();
+  ctx.moveTo(rfx - 27, rfy - 6); ctx.lineTo(rfx, rfy - 32); ctx.lineTo(rfx + 27, rfy - 6);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  birdMark(rfx, rfy - 38, 8);
+  // sign on gable
+  ctx.fillStyle = '#f4eeda';
+  ctx.font = 'italic 28px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('RIVER & THREAD', rfx, fbase - fh - 38);
 
-function renderSteamEngine() {
-  const sx = CFG.FACTORY_X + CFG.FACTORY_W - 85;
-  const sy = CFG.FACTORY_FLOOR_Y - 48;
-  ctx.fillStyle = '#505050';
-  ctx.fillRect(sx, sy, 50, 38);
-  ctx.fillStyle = '#606060';
-  ctx.fillRect(sx + 4, sy + 4, 42, 30);
-  ctx.strokeStyle = '#707070'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.moveTo(sx + 25, sy); ctx.lineTo(sx + 25, sy - 18); ctx.stroke();
-  ctx.fillStyle = `rgba(255,${100 + Math.sin(game.time * 8) * 50|0},0,0.55)`;
-  ctx.fillRect(sx + 8, sy + 30, 34, 8);
-  ctx.fillStyle = '#A0A0A0';
-  ctx.font = '7px monospace'; ctx.textAlign = 'center';
-  ctx.fillText('STEAM', sx + 25, sy - 3);
-}
+  // --- interior cutaway ---
+  const ix = CFG.FACTORY_IX, iw = CFG.FACTORY_IW, itop = CFG.FACTORY_ITOP;
+  ctx.fillStyle = '#efe3c4';
+  ctx.beginPath(); ctx.rect(ix, itop, iw, fbase - itop); ctx.fill();
+  ink(2.5, 0.4); ctx.stroke();
+  // floor
+  ctx.fillStyle = 'rgba(160,128,86,0.4)';
+  ctx.fillRect(ix, fbase - 10, iw, 10);
+  ctx.strokeStyle = 'rgba(120,90,60,0.35)'; ctx.lineWidth = 2;
+  for (let x = ix; x < ix + iw; x += 40) {
+    ctx.beginPath(); ctx.moveTo(x, fbase - 10); ctx.lineTo(x, fbase); ctx.stroke();
+  }
+  // section labels
+  ctx.fillStyle = '#8a6f4a';
+  ctx.font = 'italic 17px Georgia'; ctx.textAlign = 'center';
+  ctx.fillText('storehouse', ix + 68, itop + 26);
+  ctx.fillText('warehouse', ix + iw - 62, itop + 26);
 
-function renderSteamPuffs() {
-  for (const p of game.steamPuffs) {
-    ctx.fillStyle = `rgba(200,200,200,${p.life * 0.45})`;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+  // gallery (second storey) if any row-1 looms
+  const hasGallery = game.looms.some(l => l.row === 1);
+  if (hasGallery || game.looms.length >= 5) {
+    ctx.fillStyle = 'rgba(139,111,74,0.65)';
+    ctx.fillRect(CFG.LOOM_X0 - 30, CFG.LOOM_ROW1_BASE, 5 * CFG.LOOM_COL_SPACING + 40, 9);
+    ink(1.5, 0.4);
+    ctx.strokeRect(CFG.LOOM_X0 - 30, CFG.LOOM_ROW1_BASE, 5 * CFG.LOOM_COL_SPACING + 40, 9);
+    // ladder
+    const lx = CFG.LOOM_X0 - 44;
+    ctx.strokeStyle = '#6b4f2e'; ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(lx, fbase - 8); ctx.lineTo(lx + 14, CFG.LOOM_ROW1_BASE + 6);
+    ctx.moveTo(lx + 16, fbase - 8); ctx.lineTo(lx + 30, CFG.LOOM_ROW1_BASE + 6);
+    ctx.stroke();
+    ctx.lineWidth = 3;
+    for (let i = 1; i < 6; i++) {
+      const yy = lerp(fbase - 8, CFG.LOOM_ROW1_BASE + 6, i / 6);
+      const xx = lerp(lx, lx + 14, i / 6);
+      ctx.beginPath(); ctx.moveTo(xx, yy); ctx.lineTo(xx + 16, yy); ctx.stroke();
+    }
+  }
+
+  // cotton bales
+  const cottonBales = Math.min(Math.floor(game.cotton), 18);
+  baleStackCount(ix + 14, fbase - 6, cottonBales, 3, 38, 30, '#f2ecd9', 'rgba(150,130,90,0.5)');
+  if (game.cotton > 0) {
+    ctx.fillStyle = '#7a5c38';
+    ctx.font = 'bold 17px Georgia'; ctx.textAlign = 'center';
+    ctx.fillText(Math.floor(game.cotton), ix + 68, fbase - 12 - Math.ceil(cottonBales / 3) * 32);
+  }
+  // cloth bales
+  const clothBales = Math.min(Math.floor(game.cloth), 15);
+  baleStackCount(ix + iw - 118, fbase - 6, clothBales, 3, 36, 28, '#3d5a8f', 'rgba(210,220,240,0.5)');
+  if (game.cloth > 0) {
+    ctx.fillStyle = '#2f3f66';
+    ctx.font = 'bold 17px Georgia'; ctx.textAlign = 'center';
+    ctx.fillText(Math.floor(game.cloth), ix + iw - 62, fbase - 12 - Math.ceil(clothBales / 3) * 30);
+  }
+
+  // looms (gallery row first, then floor row), workers drawn behind their loom
+  const sorted = [...game.looms].sort((a, b) => b.row - a.row);
+  for (const loom of sorted) {
+    const w = loom.worker;
+    if (w && w.state === WS.WORKING) {
+      folkWorker(loom.x + 62, loom.base, 86, w.color, 0, { still: true });
+    }
+    folkLoom(loom.x, loom.base, CFG.LOOM_S, game.time + loom.index * 0.7, loom.active, loom.progress, loom.type === 'power');
+    if (!loom.worker && !loom.active) {
+      ctx.fillStyle = `rgba(147,57,44,${0.5 + Math.sin(game.time * 3) * 0.25})`;
+      ctx.font = 'italic 15px Georgia'; ctx.textAlign = 'center';
+      ctx.fillText('empty', loom.x + CFG.LOOM_S * 0.46, loom.base - CFG.LOOM_S - 8);
+    }
+  }
+
+  // front door
+  ctx.fillStyle = '#4a352a';
+  ink(2.5, 0.6);
+  ctx.beginPath(); ctx.rect(fx + 34, fbase - 64, 44, 64); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#e3bf45';
+  ctx.beginPath(); ctx.arc(fx + 68, fbase - 30, 3, 0, TAU); ctx.fill();
+
+  // factory chimney smoke
+  smokePuffs(fx + fw * 0.75, fbase - fh - 60, T, 9, 1.4);
+
+  // steam engine shed (right side)
+  if (game.hasSteam) {
+    const sx = fx + fw + 8, sb = fbase - 8;
+    ink(2.5, 0.6);
+    ctx.fillStyle = '#57606a';
+    ctx.beginPath(); ctx.rect(sx, sb - 92, 82, 92); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#464e57';
+    ctx.beginPath();
+    ctx.moveTo(sx - 6, sb - 92); ctx.lineTo(sx + 41, sb - 122); ctx.lineTo(sx + 88, sb - 92);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    // chimney
+    ctx.fillStyle = '#2f2b27';
+    ctx.beginPath(); ctx.rect(sx + 54, sb - 176, 20, 86); ctx.fill(); ctx.stroke();
+    // firebox glow
+    ctx.fillStyle = `rgba(230,${110 + Math.sin(game.time * 8) * 40 | 0},40,0.75)`;
+    ctx.beginPath(); ctx.rect(sx + 14, sb - 34, 34, 26); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f4eeda';
+    ctx.font = 'italic 14px Georgia'; ctx.textAlign = 'center';
+    ctx.fillText('steam', sx + 41, sb - 68);
+    smokePuffs(sx + 64, sb - 180, T, 22, 1.6);
   }
 }
 
-function renderWorkers() {
+function renderRiver(T) {
+  const rt = CFG.RIVER_TOP, rb = CFG.RIVER_BOT;
+  if (game.hasCanal) {
+    // straightened canal with stone banks
+    ctx.fillStyle = '#8a857c';
+    ctx.fillRect(-200, rt - 8, WORLD_W + 400, rb - rt + 16);
+    ctx.fillStyle = '#3c5f68';
+    ctx.fillRect(-200, rt, WORLD_W + 400, rb - rt);
+    ctx.strokeStyle = 'rgba(48,35,24,0.35)'; ctx.lineWidth = 2;
+    for (let x = -180; x < WORLD_W + 200; x += 34) {
+      ctx.beginPath(); ctx.moveTo(x, rt - 8); ctx.lineTo(x, rt); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + 17, rb); ctx.lineTo(x + 17, rb + 8); ctx.stroke();
+    }
+  } else {
+    ctx.fillStyle = '#3c5f68';
+    ctx.beginPath();
+    ctx.moveTo(-200, rt);
+    for (let x = -200; x <= WORLD_W + 200; x += 90) ctx.lineTo(x, rt + Math.sin(x * 0.006 + 2) * 8);
+    ctx.lineTo(WORLD_W + 200, rb);
+    for (let x = WORLD_W + 200; x >= -200; x -= 90) ctx.lineTo(x, rb + Math.sin(x * 0.008) * 7);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.strokeStyle = '#557d84'; ctx.lineWidth = 2.5;
+  for (let i = 0; i < 30; i++) {
+    const rx = (hash(i, 8) * WORLD_W + game.riverOffset) % WORLD_W;
+    const ry = rt + 16 + hash(i, 9) * (rb - rt - 30);
+    ctx.beginPath();
+    ctx.moveTo(rx, ry); ctx.lineTo(rx + 26, ry);
+    ctx.stroke();
+  }
+  // ducks near town end
+  const duckCols = ['#f2efe6', '#d9c69a', '#e3bf45', '#7d3b2f'];
+  for (let i = 0; i < 4; i++) {
+    duckMark(380 + i * 160 + Math.sin(T * 0.4 + i) * 25, rt + 40 + hash(i, 3) * 24, 28, duckCols[i]);
+  }
+}
+
+function renderMill(T) {
+  // axle from factory to wheel
+  ctx.strokeStyle = '#4a352a'; ctx.lineWidth = 8;
+  ctx.beginPath();
+  ctx.moveTo(CFG.FACTORY_X + CFG.FACTORY_W - 4, CFG.MILL_Y - 62);
+  ctx.lineTo(CFG.MILL_X, CFG.MILL_Y - 62);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(CFG.MILL_X, CFG.MILL_Y - 62); ctx.lineTo(CFG.MILL_X, CFG.MILL_Y);
+  ctx.stroke();
+  millWheel(CFG.MILL_X, CFG.MILL_Y, CFG.MILL_R, game.millAngle);
+  // splash
+  ctx.strokeStyle = 'rgba(180,220,230,0.5)'; ctx.lineWidth = 3;
+  for (let i = 0; i < 4; i++) {
+    const p = (T * 0.8 + i * 0.25) % 1;
+    ctx.beginPath();
+    ctx.arc(CFG.MILL_X - 20 + i * 12, CFG.MILL_Y + CFG.MILL_R - 6 + p * 10, 3 + p * 4, 0, TAU);
+    ctx.stroke();
+  }
+}
+
+function renderTransports(T) {
+  for (const t of game.transports) {
+    const dir = t.targetX > t.x ? 1 : -1;
+    const col = t.loaded ? (t.cargo === 'cotton' ? '#f2ecd9' : '#3d5a8f') : null;
+    if (t.type === 'cart') cartHorse(t.x, t.y, 66, T, dir, col);
+    else if (t.type === 'barge') bargeMark(t.x, t.y, 50, col);
+    else railcarMark(t.x, t.y, 60, col, T);
+  }
+}
+
+function renderWorkers(T) {
   for (const w of game.workers) {
     if (!w.visible) continue;
-    const bob = w.state === WS.WORKING ? 0 : Math.sin(w.bobPhase) * 1.5;
-    const wx = w.x, wy = w.y + bob;
-
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
-    ctx.fillRect(wx - 4, wy + CFG.WORKER_H - 2, 9, 3);
-
-    ctx.fillStyle = w.color;
-    ctx.fillRect(wx - 4, wy + 5, 9, 10);
-
-    ctx.fillStyle = '#E8C8A0';
-    ctx.fillRect(wx - 3, wy, 7, 6);
-
-    ctx.fillStyle = w.hatColor;
-    ctx.fillRect(wx - 4, wy - 2, 9, 3);
-
-    if (w.state !== WS.WORKING) {
-      const lp = Math.sin(w.bobPhase * 1.5);
-      ctx.fillStyle = '#4A3A2A';
-      ctx.fillRect(wx - 2 + lp, wy + 15, 3, 4);
-      ctx.fillRect(wx + 1 - lp, wy + 15, 3, 4);
-    } else {
-      ctx.fillStyle = '#4A3A2A';
-      ctx.fillRect(wx - 2, wy + 15, 3, 3);
-      ctx.fillRect(wx + 1, wy + 15, 3, 3);
-    }
-
-    if (w.carryingCloth) {
-      ctx.fillStyle = COL.cloth;
-      ctx.fillRect(wx + 5, wy + 3, 6, 5);
-    }
-
+    if (w.state === WS.WORKING && w.employer === 'player') continue; // drawn at loom
+    const s = 60;
+    const inFactory = w.state === WS.ENTERING_FACTORY || w.state === WS.CARRYING_CLOTH;
+    folkWorker(w.x, w.y, inFactory ? 80 : s, w.color, w.bobPhase, {
+      carry: w.carryingCloth,
+      still: w.state === WS.DECIDING,
+    });
     if (w.state === WS.DECIDING) {
-      ctx.fillStyle = 'rgba(255,255,255,0.8)';
-      ctx.beginPath(); ctx.arc(wx + 8, wy - 8, 6, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#333';
-      ctx.font = '8px monospace'; ctx.textAlign = 'center';
-      ctx.fillText('?', wx + 8, wy - 5);
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.beginPath(); ctx.arc(wx + 5, wy - 2, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(244,238,218,0.95)';
+      ink(2, 0.5);
+      ctx.beginPath(); ctx.arc(w.x + 30, w.y - 78, 15, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(w.x + 18, w.y - 60, 4.5, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#3a2c1e';
+      ctx.font = 'bold 16px Georgia'; ctx.textAlign = 'center';
+      ctx.fillText('?', w.x + 30, w.y - 72);
     }
   }
-}
-
-function renderTransports() {
-  for (const t of game.transports) {
-    if (t.type === 'cart') renderCart(t);
-    else if (t.type === 'barge') renderBarge(t);
-    else renderRailcar(t);
-  }
-}
-
-function renderCart(t) {
-  const cx = t.x, cy = t.y;
-  // Horse
-  ctx.fillStyle = '#8A6A4A';
-  ctx.fillRect(cx - 22, cy - 12, 16, 10);
-  ctx.fillRect(cx - 20, cy - 2, 3, 7);
-  ctx.fillRect(cx - 12, cy - 2, 3, 7);
-  ctx.fillRect(cx - 26, cy - 16, 8, 8);
-  // Cart
-  ctx.fillStyle = '#6A5030';
-  ctx.fillRect(cx, cy - 13, CFG.CART_W, 15);
-  ctx.fillStyle = '#5A4020';
-  ctx.fillRect(cx + 2, cy - 11, CFG.CART_W - 4, 11);
-  if ((t.loaded && t.cargo === 'cotton') || (t.loaded && t.cargo === 'cloth') || (t.cargo === 'cotton' && t.amount > 0)) {
-    ctx.fillStyle = t.cargo === 'cotton' ? COL.cotton : COL.cloth;
-    ctx.fillRect(cx + 4, cy - 13 - 6, CFG.CART_W - 8, 6);
-  }
-  ctx.fillStyle = '#3A2A1A';
-  ctx.beginPath();
-  ctx.arc(cx + 8, cy + 3, 5, 0, Math.PI * 2);
-  ctx.arc(cx + CFG.CART_W - 8, cy + 3, 5, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-function renderBarge(t) {
-  const bx = t.x, by = t.y;
-  ctx.fillStyle = '#5A4A3A';
-  ctx.beginPath();
-  ctx.moveTo(bx - 30, by); ctx.lineTo(bx - 22, by + 14);
-  ctx.lineTo(bx + 38, by + 14); ctx.lineTo(bx + 48, by);
-  ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#7A6A5A';
-  ctx.fillRect(bx - 26, by - 3, 62, 5);
-  if (t.loaded || t.amount > 0) {
-    ctx.fillStyle = t.cargo === 'cotton' ? COL.cotton : COL.cloth;
-    ctx.fillRect(bx - 14, by - 12, 38, 10);
-  }
-}
-
-function renderRailcar(t) {
-  const rx = t.x, ry = t.y;
-  ctx.fillStyle = '#4A4A4A';
-  ctx.fillRect(rx - 24, ry - 17, 48, 17);
-  ctx.fillStyle = '#5A5A5A';
-  ctx.fillRect(rx - 22, ry - 15, 44, 13);
-  if (t.loaded || t.amount > 0) {
-    ctx.fillStyle = t.cargo === 'cotton' ? '#E8E0D0' : '#3050A0';
-    ctx.fillRect(rx - 18, ry - 24, 36, 8);
-  }
-  ctx.fillStyle = '#333';
-  ctx.beginPath();
-  ctx.arc(rx - 14, ry + 2, 4, 0, Math.PI * 2);
-  ctx.arc(rx + 14, ry + 2, 4, 0, Math.PI * 2);
-  ctx.fill();
 }
 
 function renderWorldLabels() {
   const streetW = game.workers.filter(w => w.visible && (w.state === WS.ON_STREET || w.state === WS.DECIDING || w.state === WS.WALKING_TO_STREET)).length;
   if (streetW > 0) {
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.fillRect(750, CFG.STREET_Y - 35, 110, 18);
-    ctx.fillStyle = '#E0D0B0';
-    ctx.font = '9px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(`${streetW} seeking work`, 805, CFG.STREET_Y - 22);
+    ctx.fillStyle = 'rgba(244,238,218,0.85)';
+    ink(1.5, 0.4);
+    ctx.beginPath(); ctx.rect(700, CFG.STREET_TOP - 40, 190, 26); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#4a382c';
+    ctx.font = 'italic 15px Georgia'; ctx.textAlign = 'center';
+    ctx.fillText(`${streetW} seeking work`, 795, CFG.STREET_TOP - 22);
   }
 }
 
 function renderHUD() {
-  // Rendered in screen space (after ctx.restore)
   ctx.save();
-  ctx.fillStyle = 'rgba(0,0,0,0.45)';
-  ctx.fillRect(5, 5, 130, 28);
-  ctx.fillStyle = '#F0D080';
-  ctx.font = 'bold 12px monospace'; ctx.textAlign = 'left';
-  ctx.fillText(`Day ${game.day}`, 12, 22);
-  ctx.fillStyle = '#333';
-  ctx.fillRect(72, 12, 54, 10);
-  ctx.fillStyle = game.dayNightCycle < 0.5 ? '#F0D060' : '#4060A0';
-  ctx.fillRect(73, 13, 52 * game.dayNightCycle, 8);
+  ctx.fillStyle = 'rgba(244,238,218,0.92)';
+  ctx.strokeStyle = 'rgba(48,35,24,0.4)'; ctx.lineWidth = 2;
+  roundRect(8, 8, 148, 34, 8); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#93392c';
+  ctx.font = 'bold 15px Georgia'; ctx.textAlign = 'left';
+  ctx.fillText(`Day ${game.day}`, 18, 30);
+  // day arc
+  ctx.fillStyle = '#e0d5b8';
+  ctx.fillRect(88, 17, 58, 12);
+  ctx.fillStyle = game.dayProgress < 0.5 ? '#e3bf45' : '#3f5d70';
+  ctx.fillRect(89, 18, 56 * game.dayProgress, 10);
 
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.fillRect(140, 5, 170, 28);
-  ctx.fillStyle = '#C0A060';
-  ctx.font = '10px monospace'; ctx.textAlign = 'left';
-  const eraNames = ['', 'I: Water & Handlooms', 'II: Canal & Steam', 'III: Rail & Industry'];
-  ctx.fillText(`Era ${eraNames[game.era]}`, 148, 22);
+  ctx.fillStyle = 'rgba(244,238,218,0.92)';
+  roundRect(164, 8, 210, 34, 8); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#4a382c';
+  ctx.font = 'italic 13px Georgia'; ctx.textAlign = 'left';
+  const eraNames = ['', 'I · Water & Handlooms', 'II · Canal & Steam', 'III · Rail & Industry'];
+  ctx.fillText(`Era ${eraNames[game.era]}`, 174, 30);
   ctx.restore();
 }
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
 
-// ============ UI PANEL UPDATES ============
+// ============ UI PANEL ============
 function updateUI() {
   document.getElementById('s-gold').textContent = Math.floor(game.money);
   const incEl = document.getElementById('s-income');
   incEl.textContent = (game.lastDayIncome >= 0 ? '+' : '') + Math.floor(game.lastDayIncome);
-  incEl.style.color = game.lastDayIncome >= 0 ? '#80d080' : '#d08080';
+  incEl.style.color = game.lastDayIncome >= 0 ? '#4a7030' : '#a83828';
   document.getElementById('s-cotton').textContent = Math.floor(game.cotton);
   document.getElementById('s-cloth').textContent = Math.floor(game.cloth);
   document.getElementById('s-energy-src').textContent = game.hasSteam ? 'Steam + Water' : 'Water Mill';
@@ -1588,7 +1857,6 @@ function updateUI() {
   if (game.hasCanal) document.getElementById('btn-canal').textContent = 'Canal Works (Built)';
   if (game.hasRailroad) document.getElementById('btn-rail').textContent = 'Railroad (Built)';
 
-  // Mobile HUD
   const mGold = document.getElementById('m-gold');
   if (mGold) {
     mGold.textContent = Math.floor(game.money);
@@ -1672,8 +1940,12 @@ function gameLoop(ts) {
 }
 
 // ============ START ============
+resize();
+// open with the factory front at the right edge, street and shops filling the rest
+camX = Math.max(0, CFG.FACTORY_X + 320 - W / SCALE);
+clampCamera();
 initGame();
-requestAnimationFrame(function(ts) { lastTime = ts; gameLoop(ts); });
+requestAnimationFrame(ts => { lastTime = ts; gameLoop(ts); });
 
 window.setWage = setWage;
 window.setPrice = setPrice;
@@ -1687,7 +1959,6 @@ window.buildRailroad = buildRailroad;
 window.togglePanel = togglePanel;
 window.toggleSection = toggleSection;
 
-// Start panel collapsed on mobile
 if (isMobile()) { togglePanel(); }
 </script>
 </body>
