@@ -131,6 +131,7 @@ button.action-btn.upgrade:hover { background: #67804f; }
       <div class="stat-row"><span>Source</span><span class="stat-val" id="s-energy-src">Water Mill</span></div>
       <div class="energy-bar"><div class="energy-fill" id="energy-fill" style="width:0%"></div></div>
       <div class="stat-row"><span>Used / Max</span><span class="stat-val" id="s-energy">0 / 4</span></div>
+      <div class="stat-row"><span>Coal</span><span class="stat-val" id="s-coal">&#8212;</span></div>
     </div>
   </div>
   <div class="section">
@@ -147,7 +148,7 @@ button.action-btn.upgrade:hover { background: #67804f; }
       <button class="action-btn" id="btn-loom" onclick="buyLoom()">Buy Hand Loom (30g)</button>
       <button class="action-btn" id="btn-power-loom" onclick="buyPowerLoom()">Buy Power Loom (80g)</button>
       <button class="action-btn" id="btn-house" onclick="buildHouse()">Build Worker House (40g)</button>
-      <button class="action-btn upgrade" id="btn-steam" onclick="buySteam()">Steam Engine (200g)</button>
+      <button class="action-btn upgrade" id="btn-steam" onclick="buySteam()">Steam Engine (200g, burns coal)</button>
       <button class="action-btn upgrade" id="btn-canal" onclick="buildCanal()">Canal Works (300g)</button>
       <button class="action-btn upgrade" id="btn-rail" onclick="buildRailroad()">Railroad (500g)</button>
     </div>
@@ -192,7 +193,7 @@ button.action-btn.upgrade:hover { background: #67804f; }
     </div>
     <div class="mkt-hint" id="h-cloth"></div>
   </div>
-  <div id="margin-chip">margin / cloth<br><span class="m-val" id="v-margin">+3g</span></div>
+  <div id="margin-chip">profit / weaver / day<br><span class="m-val" id="v-margin">+3g</span></div>
 </div>
 
 <script>
@@ -313,7 +314,9 @@ const CFG = {
   WORKER_SPEED: 80,
   DAY_LENGTH: 30,
   HAND_LOOM_RATE: 0.035,
-  POWER_LOOM_RATE: 0.08,
+  POWER_LOOM_RATE: 0.175,     // steam-driven looms run 5x
+  COAL_PER_ENERGY: 3,         // g/day per steam-energy unit in use
+  COMP_COAL_PER_WORKER: 2,    // g/day per worker at a steam-powered rival
   COTTON_PER_CLOTH: 1,
   MAX_LOOMS: 10,
   INITIAL_TOWN_POP: 8,
@@ -441,13 +444,26 @@ const TOWN_PLOTS = [
   backP(0), midP(1), backP(10), midP(3), backP(1),
   midP(5), backP(3), midP(7), backP(5), backP(7), backP(9),
 ];
-function townPlot(index) { return TOWN_PLOTS[Math.min(index, TOWN_PLOTS.length - 1)]; }
+// shanties wedge into the gaps between the proper houses once plots run out
+function shantyMid(col) { return { x: 176 + col * 160, base: CFG.MID_ROW_BASE + 6, w: 44, h: 40, back: false, shanty: true }; }
+function shantyBack(col) { return { x: 198 + col * 135, base: CFG.BACK_ROW_BASE + 4, w: 36, h: 32, back: true, shanty: true }; }
+const SHANTY_PLOTS = [
+  shantyMid(1), shantyBack(3), shantyMid(4), shantyBack(6), shantyMid(7),
+  shantyBack(1), shantyMid(2), shantyBack(8), shantyMid(5), shantyBack(4),
+  shantyMid(0), shantyBack(9), shantyMid(8), shantyBack(0),
+];
+const SHANTY_BODIES = ['#8a7a66', '#7a6f5c', '#6e6354', '#837262'];
+function maxTownHouses() { return TOWN_PLOTS.length + SHANTY_PLOTS.length; }
+function townPlot(index) {
+  if (index < TOWN_PLOTS.length) return TOWN_PLOTS[index];
+  return SHANTY_PLOTS[Math.min(index - TOWN_PLOTS.length, SHANTY_PLOTS.length - 1)];
+}
 function createTownHouse(index) {
   const p = townPlot(index);
   return {
     ...p,
-    body: HOUSE_BODIES[index % HOUSE_BODIES.length],
-    roof: HOUSE_ROOFS[index % HOUSE_ROOFS.length],
+    body: p.shanty ? SHANTY_BODIES[index % SHANTY_BODIES.length] : HOUSE_BODIES[index % HOUSE_BODIES.length],
+    roof: p.shanty ? '#5a4638' : HOUSE_ROOFS[index % HOUSE_ROOFS.length],
     seed: index,
   };
 }
@@ -619,18 +635,25 @@ function updateWorkers(dt) {
         if (Math.random() < dt * 0.12 && tryPoach(w)) break;
         if (w.employer === 'player' && w.assignedLoom) {
           const loom = w.assignedLoom;
-          if (game.cotton > 0 && game.money >= game.wages) {
+          if (game.cotton > 0 && game.money > 0) {
             loom.active = true;
             w.noWorkTimer = 0;
             loom.progress += loom.productionRate * dt;
             if (loom.progress >= 1) {
               loom.progress = 0;
               game.cotton = Math.max(0, game.cotton - CFG.COTTON_PER_CLOTH);
-              w.carryingCloth = true;
-              w.state = WS.CARRYING_CLOTH;
-              w.targetX = CFG.WAREHOUSE_IN_X;
-              w.targetY = CFG.LOOM_ROW0_BASE;
-              loom.active = false;
+              loom.batch = (loom.batch || 0) + 1;
+              // fast looms weave a batch before the trip to the warehouse
+              const batchSize = loom.type === 'power' ? 3 : 1;
+              if (loom.batch >= batchSize) {
+                w.carryAmount = loom.batch;
+                loom.batch = 0;
+                w.carryingCloth = true;
+                w.state = WS.CARRYING_CLOTH;
+                w.targetX = CFG.WAREHOUSE_IN_X;
+                w.targetY = CFG.LOOM_ROW0_BASE;
+                loom.active = false;
+              }
             }
           } else {
             loom.active = false;
@@ -649,11 +672,11 @@ function updateWorkers(dt) {
       case WS.CARRYING_CLOTH:
         w.bobPhase += dt * 7;
         if (moveToward(w, w.targetX, w.targetY, CFG.WORKER_SPEED * 0.7 * dt)) {
-          game.cloth++;
-          game.clothProducedToday++;
-          game.money -= game.wages;             // piece-rate: paid per cloth
-          game.dailyIncomeTracker -= game.wages;
-          addFloater(w.x, w.y - 60, '+1 cloth', '#3d5a8f');
+          const amount = w.carryAmount || 1;
+          game.cloth += amount;
+          game.clothProducedToday += amount;
+          addFloater(w.x, w.y - 60, `+${amount} cloth`, '#3d5a8f');
+          w.carryAmount = 0;
           w.carryingCloth = false;
           if (w.shiftProgress >= w.shiftLen) {
             endShift(w);
@@ -782,6 +805,24 @@ function moveToward(obj, tx, ty, speed) {
   obj.y += (dy / dist) * speed;
   obj.direction = dx > 0 ? 1 : dx < 0 ? -1 : obj.direction;
   return false;
+}
+
+// ============ PAYROLL & COAL: wages are paid by the day, not by the piece,
+// ============ so productivity gains widen the margin instead of the pay ============
+function playerEmployedCount() {
+  return game.workers.filter(w => w.employer === 'player' &&
+    (w.state === WS.WORKING || w.state === WS.ENTERING_FACTORY || w.state === WS.CARRYING_CLOTH)).length;
+}
+function playerCoalPerDay() {
+  if (!game.hasSteam) return 0;
+  const steamUnits = Math.max(0, game.energyUsed - CFG.WATER_MILL_ENERGY);
+  return steamUnits * CFG.COAL_PER_ENERGY;
+}
+function updatePayroll(dt) {
+  const wageDrain = playerEmployedCount() * game.wages * dt / CFG.DAY_LENGTH;
+  const coalDrain = playerCoalPerDay() * dt / CFG.DAY_LENGTH;
+  game.money -= wageDrain + coalDrain;
+  game.dailyIncomeTracker -= wageDrain + coalDrain;
 }
 
 // ============ MARKET: cotton sells to the highest bidder,
@@ -970,14 +1011,26 @@ function updateFirms(dt) {
   for (const c of game.competitors) {
     c.seats = seats;
 
-    // production: each worker weaves like a hand loom, paid per cloth
-    c.prodAcc += c.workers * CFG.HAND_LOOM_RATE * dt;
+    // rivals industrialise too: once steam is in the air and they can afford it
+    if (!c.hasSteam && (game.hasSteam || game.era >= 2) && c.gold > 200 && Math.random() < dt * 0.02) {
+      c.hasSteam = true;
+      c.gold -= 200;
+      addMessage(`${c.name} installs a steam engine!`, 'era');
+      addFloater(c.x + c.w / 2, CFG.FRONT_BASE - 200, 'STEAM!', '#3c5f68');
+    }
+
+    // wages by the day + coal for the boiler
+    const drain = (c.workers * c.wage + (c.hasSteam ? c.workers * CFG.COMP_COAL_PER_WORKER : 0)) * dt / CFG.DAY_LENGTH;
+    c.gold -= drain;
+
+    // production: steam looms run 5x
+    const rate = c.hasSteam ? CFG.HAND_LOOM_RATE * 5 : CFG.HAND_LOOM_RATE;
+    c.prodAcc += c.workers * rate * dt;
     if (c.prodAcc >= 1) {
       c.prodAcc -= 1;
-      if (c.cotton >= 1 && c.gold >= c.wage) {
+      if (c.cotton >= 1 && c.gold > 0) {
         c.cotton--;
         c.cloth++;
-        c.gold -= c.wage;
       } else if (c.workers > 0 && Math.random() < 0.5) {
         // starved of cotton or coin: a worker walks out
         const quitter = game.workers.find(w => w.employer === c.name && w.state === WS.WORKING);
@@ -1017,14 +1070,18 @@ function updateFirms(dt) {
           || (other.wage >= c.wage + 2 && other.workers < other.seats);
         wt = poachThreat ? c.wage : Math.max(2, Math.round(avgWage) - 1);
       }
-      // never pay more than the margin can bear (fields.html: MAX_WAGE = value - 2)
-      wt = Math.min(wt, Math.max(2, c.clothPrice - c.cottonBid - 1));
+      // never pay more than a worker earns them in a day — the ceiling
+      // leaps upward once steam multiplies cloth-per-worker
+      const prodPerDay = (c.hasSteam ? CFG.HAND_LOOM_RATE * 5 : CFG.HAND_LOOM_RATE) * CFG.DAY_LENGTH;
+      const coalPerDay = c.hasSteam ? CFG.COMP_COAL_PER_WORKER : 0;
+      wt = Math.min(wt, Math.max(2, Math.floor(prodPerDay * (c.clothPrice - c.cottonBid) - coalPerDay - 2)));
 
-      // cotton bid target
+      // cotton bid target — steam mills burn through stock and bid harder
+      const lowStock = c.hasSteam ? 14 : 5;
       let bt;
       if (cashScared) bt = 2;
-      else if (c.cotton < 5) bt = maxBid + 1;
-      else if (c.cotton > 24) bt = 2;
+      else if (c.cotton < lowStock) bt = maxBid + 1;
+      else if (c.cotton > (c.hasSteam ? 40 : 24)) bt = 2;
       else bt = 3 + (agg ? 1 : 0);
       bt = Math.min(bt, Math.max(2, c.clothPrice - c.wage - 1));
 
@@ -1049,14 +1106,23 @@ function updateFirms(dt) {
 }
 
 // ============ TOWN GROWTH ============
+// high wages draw migrants: houses go up faster, then shanties fill the cracks
 function updateTownGrowth(dt) {
   game.townGrowthTimer -= dt;
   if (game.townGrowthTimer <= 0) {
-    const rate = game.era === 1 ? 40 : game.era === 2 ? 20 : 10;
-    game.townGrowthTimer = rate + Math.random() * 15;
-    if (game.townHouses.length < 21) {
-      game.townHouses.push(createTownHouse(game.townHouses.length));
-      addMessage('A new house has gone up in town.', 'info');
+    const avgWage = (game.wages + game.competitors[0].wage + game.competitors[1].wage) / 3;
+    const boom = Math.max(0.8, Math.min(6, avgWage / 4));
+    game.townGrowthTimer = (35 + Math.random() * 15) / boom;
+    if (game.townHouses.length < maxTownHouses()) {
+      const n = game.townHouses.length;
+      game.townHouses.push(createTownHouse(n));
+      if (n === TOWN_PLOTS.length) {
+        addMessage('The town is full — shanties spring up in the cracks between houses!', 'era');
+      } else if (n > TOWN_PLOTS.length) {
+        if (Math.random() < 0.4) addMessage('Another shanty goes up.', 'info');
+      } else {
+        addMessage('A new house has gone up in town.', 'info');
+      }
     }
     const target = game.townHouses.length * 2 + game.playerHouses.length * CFG.WORKERS_PER_HOUSE;
     if (game.workers.length < target) {
@@ -1085,7 +1151,7 @@ function checkEraProgression() {
     addMessage('The town booms with new arrivals.', 'info');
     for (let i = 0; i < 8; i++) spawnWorker('town');
     for (let i = 0; i < 4; i++) {
-      if (game.townHouses.length < 21) game.townHouses.push(createTownHouse(game.townHouses.length));
+      if (game.townHouses.length < maxTownHouses()) game.townHouses.push(createTownHouse(game.townHouses.length));
     }
     document.getElementById('era-display').className = 'era-badge era-3';
     document.getElementById('era-display').textContent = 'Era III: Rail & Industry';
@@ -1120,6 +1186,7 @@ function update(dt) {
   game.millAngle += dt * 1.5;
   game.riverOffset += dt * 20;
   updateDayNight(dt);
+  updatePayroll(dt);
   updateWorkers(dt);
   updateTransports(dt);
   updateFirms(dt);
@@ -1392,6 +1459,44 @@ function folkHouse(x, base, w, h, body, roof, opts) {
     ctx.stroke();
     ink(Math.max(1.5, w * 0.018), 0.6);
   }
+  ctx.restore();
+}
+
+// crooked lean-to shack for the overcrowded town
+function drawShanty(x, base, w, h, body, seed, night) {
+  ctx.save();
+  ctx.translate(x + w / 2, base);
+  ctx.rotate((hash(seed, base) - 0.5) * 0.09);
+  ctx.translate(-(x + w / 2), -base);
+  ink(Math.max(1.2, w * 0.035), 0.6);
+  // patched plank body
+  ctx.fillStyle = body;
+  ctx.beginPath(); ctx.rect(x, base - h, w, h); ctx.fill(); ctx.stroke();
+  ctx.strokeStyle = 'rgba(48,35,24,0.3)'; ctx.lineWidth = 1.2;
+  for (let i = 1; i < 4; i++) {
+    const yy = base - h + (h * i / 4);
+    ctx.beginPath(); ctx.moveTo(x + 1, yy); ctx.lineTo(x + w - 1, yy); ctx.stroke();
+  }
+  // mismatched patch board
+  ctx.fillStyle = shade(body, 18);
+  ctx.beginPath(); ctx.rect(x + w * 0.62, base - h * 0.9, w * 0.28, h * 0.34); ctx.fill();
+  ink(1.2, 0.4); ctx.stroke();
+  // tilted lean-to roof
+  ctx.fillStyle = '#5a4638';
+  ctx.beginPath();
+  ctx.moveTo(x - w * 0.12, base - h + 2);
+  ctx.lineTo(x - w * 0.06, base - h - h * 0.28);
+  ctx.lineTo(x + w * 1.12, base - h - h * 0.1);
+  ctx.lineTo(x + w * 1.12, base - h + 4);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // stovepipe
+  ctx.fillStyle = '#3a3430';
+  ctx.beginPath(); ctx.rect(x + w * 0.72, base - h - h * 0.42, w * 0.09, h * 0.3); ctx.fill(); ctx.stroke();
+  // low door + one dim window
+  ctx.fillStyle = '#3f342a';
+  ctx.beginPath(); ctx.rect(x + w * 0.12, base - h * 0.62, w * 0.26, h * 0.62); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = night ? '#d8b04e' : '#4a5058';
+  ctx.beginPath(); ctx.rect(x + w * 0.56, base - h * 0.52, w * 0.2, w * 0.18); ctx.fill(); ctx.stroke();
   ctx.restore();
 }
 
@@ -1721,16 +1826,22 @@ function render() {
   ctx.fillRect(-200, 344, WORLD_W + 400, 22);
 
   // --- town rows (back first) ---
-  const backHouses = game.townHouses.filter(h => h.back);
-  const midHouses = game.townHouses.filter(h => !h.back);
+  const backHouses = game.townHouses.filter(h => h.back && !h.shanty);
+  const midHouses = game.townHouses.filter(h => !h.back && !h.shanty);
+  const backShanties = game.townHouses.filter(h => h.back && h.shanty);
+  const midShanties = game.townHouses.filter(h => !h.back && h.shanty);
   for (const h of backHouses) {
     folkHouse(h.x, h.base, h.w, h.h, h.body, h.roof, { lit: night ? 2 : 0, seed: h.seed });
     smokePuffs(h.x + h.w * 0.72, h.base - h.h * 1.4, T, h.seed, 0.55);
   }
+  for (const h of backShanties) {
+    drawShanty(h.x, h.base, h.w, h.h, h.body, h.seed, night);
+    smokePuffs(h.x + h.w * 0.76, h.base - h.h * 1.4, T, h.seed, 0.4);
+  }
   // future plots (dashed) — the next two lots the town will build on
   ctx.setLineDash([7, 6]);
   ink(2, 0.4);
-  for (let n = game.townHouses.length; n < Math.min(game.townHouses.length + 2, 21); n++) {
+  for (let n = game.townHouses.length; n < Math.min(game.townHouses.length + 2, TOWN_PLOTS.length); n++) {
     const p = townPlot(n);
     ctx.strokeRect(p.x, p.base - p.h, p.w, p.h);
   }
@@ -1744,6 +1855,10 @@ function render() {
   for (const h of midHouses) {
     house25(h.x, h.base, h.w, h.h, h.body, h.roof, { lit: night ? 2 : (h.seed % 3 === 0 ? 1 : 0) });
     smokePuffs(h.x + h.w * 0.5, h.base - h.h * 1.6, T, h.seed + 10, 0.7);
+  }
+  for (const h of midShanties) {
+    drawShanty(h.x, h.base, h.w, h.h, h.body, h.seed, night);
+    smokePuffs(h.x + h.w * 0.76, h.base - h.h * 1.5, T, h.seed, 0.45);
   }
   cowMark(2200, 505, 70);
 
@@ -1787,6 +1902,13 @@ function render() {
     // their unsold cloth piles up by the door — watch rivals price themselves out
     const stack = Math.min(Math.floor(comp.cloth), 8);
     baleStackCount(comp.x + 6, CFG.FRONT_BASE - 2, stack, 2, 18, 13, '#3d5a8f', 'rgba(210,220,240,0.5)');
+    // steam-powered rivals sprout a boiler chimney
+    if (comp.hasSteam) {
+      ctx.fillStyle = '#3a3430';
+      ink(1.5, 0.5);
+      ctx.beginPath(); ctx.rect(comp.x + comp.w - 30, CFG.FRONT_BASE - 175 - 52, 16, 46); ctx.fill(); ctx.stroke();
+      smokePuffs(comp.x + comp.w - 22, CFG.FRONT_BASE - 175 - 54, game.time, comp.x, 1.1);
+    }
   }
 
   // player worker houses
@@ -2151,6 +2273,8 @@ function updateUI() {
   document.getElementById('s-energy-src').textContent = game.hasSteam ? 'Steam + Water' : 'Water Mill';
   document.getElementById('s-energy').textContent = `${game.energyUsed} / ${game.energyMax}`;
   document.getElementById('energy-fill').style.width = game.energyMax > 0 ? `${(game.energyUsed / game.energyMax) * 100}%` : '0%';
+  const coal = playerCoalPerDay();
+  document.getElementById('s-coal').textContent = coal > 0 ? `−${coal}g/day` : '—';
 
   const active = game.looms.filter(l => l.active).length;
   const myW = game.workers.filter(w => w.employer === 'player').length;
@@ -2211,7 +2335,14 @@ function updateMarketBar() {
   if (game.clothPrice < rivalAsk) { hCloth.textContent = 'cheapest — buyers pick you'; hCloth.className = 'mkt-hint'; }
   else { hCloth.textContent = `${askName} asks ${rivalAsk}g`; hCloth.className = 'mkt-hint warn'; }
 
-  const margin = game.clothPrice - game.wages - game.cottonBid;
+  // what one weaver earns you per day: output x (price - cotton) - wage - coal
+  const avgRate = game.looms.length
+    ? game.looms.reduce((s, l) => s + l.productionRate, 0) / game.looms.length
+    : CFG.HAND_LOOM_RATE;
+  const prodPerDay = avgRate * CFG.DAY_LENGTH * 0.75; // walking time overhead
+  const coalShare = game.hasSteam && playerEmployedCount() > 0
+    ? playerCoalPerDay() / Math.max(1, playerEmployedCount()) : 0;
+  const margin = Math.round(prodPerDay * (game.clothPrice - game.cottonBid) - game.wages - coalShare);
   const mEl = document.getElementById('v-margin');
   mEl.textContent = (margin >= 0 ? '+' : '') + margin + 'g';
   mEl.style.color = margin > 0 ? '#4a7030' : '#a83828';
@@ -2249,7 +2380,8 @@ function buySteam() {
   game.hasSteam = true;
   game.energyMax = CFG.STEAM_ENERGY;
   addMessage('=== STEAM ENGINE INSTALLED ===', 'era');
-  addMessage(`Energy capacity: ${CFG.STEAM_ENERGY}!`, 'good');
+  addMessage(`Energy capacity: ${CFG.STEAM_ENERGY}! Power looms run 5x.`, 'good');
+  addMessage(`Coal costs ${CFG.COAL_PER_ENERGY}g/day per steam loom running.`, 'info');
 }
 function buildCanal() {
   if (game.money < CFG.CANAL_COST || game.hasCanal) return;
